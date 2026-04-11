@@ -42,6 +42,7 @@ export async function createTicketFromAI(data: {
         priority: data.priority,
         moduleId: data.moduleId,
         leadId: data.leadId,
+        creatorId: "SYSTEM_AI_GENERATED",
         subtasks: {
           create: data.subtasks.map(s => ({
             title: s.title,

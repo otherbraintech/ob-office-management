@@ -33,14 +33,14 @@ export default async function DashboardOverview() {
 
   // Consultas Generales vs Personales
   const projectCount = await prisma.project.count({ where: isCEO ? { status: 'active' } : undefined });
-  const ticketCount = await prisma.ticket.count({ 
-    where: { 
+  const ticketCount = await prisma.ticket.count({
+    where: {
       status: { not: 'DONE' },
       ...(isClient ? { creatorId: session.id } : {}),
-      ...((!isCEO && !isClient) ? { 
-          OR: [{ leadId: session.id }, { collaborators: { some: { id: session.id } } }] 
+      ...((!isCEO && !isClient) ? {
+          OR: [{ leadId: session.id }, { collaborators: { some: { id: session.id } } }]
        } : {})
-    } 
+    }
   });
 
   const recentTickets = await prisma.ticket.findMany({
@@ -63,7 +63,7 @@ export default async function DashboardOverview() {
     select: { duration: true }
   });
 
-  let monthlyExpenses = { _sum: { amount: 0 } };
+  let monthlyExpenses: { _sum: { amount: number | null } } = { _sum: { amount: 0 } };
   if (isCEO) {
     monthlyExpenses = await prisma.expense.aggregate({
       where: { billDate: { gte: firstDayOfMonth } },
@@ -76,7 +76,7 @@ export default async function DashboardOverview() {
   const totalMonthlyExpenses = monthlyExpenses._sum.amount || 0;
 
   const myProjects = await prisma.project.findMany({
-    take: 3,
+    take: 5,
     include: {
       modules: {
         include: {
@@ -87,6 +87,9 @@ export default async function DashboardOverview() {
       }
     }
   });
+
+  const firstModule = await prisma.module.findFirst();
+  const firstModuleId = firstModule?.id || "";
 
   return (
     <div className="flex flex-col gap-8 p-4 md:p-8">
@@ -185,7 +188,7 @@ export default async function DashboardOverview() {
           {!isClient && (
             <div className="grid gap-4 md:grid-cols-2">
               <ActiveTimer />
-              <NewTicketForm />
+              <NewTicketForm moduleId={firstModuleId} userId={session.id} />
             </div>
           )}
         </div>

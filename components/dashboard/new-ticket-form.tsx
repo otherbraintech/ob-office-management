@@ -10,7 +10,7 @@ import { aiAnalyzeTicket } from '@/app/actions/ai';
 import { createTicket } from '@/app/actions/dashboard';
 import { TicketPriority, TicketStatus } from '@prisma/client';
 
-export function NewTicketForm() {
+export function NewTicketForm({ moduleId, userId }: { moduleId: string; userId: string }) {
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [suggestedTicket, setSuggestedTicket] = useState<{
@@ -38,11 +38,21 @@ export function NewTicketForm() {
 
   const handleSaveTicket = async () => {
     if (!suggestedTicket) return;
-    // Mock save logic with action
-    // await createTicket({ ...suggestedTicket, moduleId: 'some-id', leadId: 'some-user-id' });
-    alert('¡Ticket guardado!');
-    setSuggestedTicket(null);
-    setPrompt('');
+    try {
+      await createTicket({
+        title: suggestedTicket.title,
+        description: suggestedTicket.description,
+        priority: suggestedTicket.priority,
+        moduleId: moduleId,
+        leadId: userId
+      });
+      alert('¡Ticket guardado!');
+      setSuggestedTicket(null);
+      setPrompt('');
+    } catch (e) {
+      console.error(e);
+      alert('Error al guardar el ticket');
+    }
   };
 
   return (
