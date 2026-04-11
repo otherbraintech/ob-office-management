@@ -1,0 +1,175 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  CEO
+  DEVELOPER
+  INTERN
+  EXTERNAL_CLIENT
+}
+
+enum TicketStatus {
+  BACKLOG
+  IN_PROGRESS
+  REVIEW
+  DONE
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum SubtaskStatus {
+  TODO
+  DOING
+  DONE
+}
+
+enum ExpenseType {
+  INTERNAL
+  COMPANY
+  RECURRING
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String?
+  name      String?
+  role      Role     @default(DEVELOPER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  createdTickets   Ticket[]       @relation("TicketCreator")
+  ledTickets       Ticket[]       @relation("TicketLead")
+  sharedTickets    Ticket[]       @relation("TicketCollaborators")
+  assignedSubtasks Subtask[]
+  workSessions     WorkSession[]
+  expenses         Expense[]
+  comments         Comment[]
+  notifications    Notification[]
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Estructura jerárquica
+  modules  Module[]
+  expenses Expense[]
+}
+
+model Module {
+  id        String   @id @default(cuid())
+  name      String
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id])
+  tickets   Ticket[]
+}
+
+model Ticket {
+  id          String         @id @default(cuid())
+  title       String
+  description String?
+  status      TicketStatus   @default(BACKLOG)
+  priority    TicketPriority @default(MEDIUM)
+  moduleId    String
+  module      Module         @relation(fields: [moduleId], references: [id])
+
+  creatorId     String
+  creator       User   @relation("TicketCreator", fields: [creatorId], references: [id])
+  leadId        String
+  lead          User   @relation("TicketLead", fields: [leadId], references: [id])
+  collaborators User[] @relation("TicketCollaborators")
+
+  subtasks  Subtask[]
+  comments  Comment[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Subtask {
+  id            String        @id @default(cuid())
+  title         String
+  status        SubtaskStatus @default(TODO)
+  estimatedTime Int // En minutos
+  realTime      Int           @default(0) // En minutos, acumulado de sesiones
+
+  ticketId String
+  ticket   Ticket @relation(fields: [ticketId], references: [id])
+
+  assignedId String?
+  assignedTo User?   @relation(fields: [assignedId], references: [id])
+
+  workSessions WorkSession[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model WorkSession {
+  id        String    @id @default(cuid())
+  startTime DateTime  @default(now())
+  endTime   DateTime?
+  duration  Int       @default(0) // En minutos
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  subtaskId String
+  subtask   Subtask @relation(fields: [subtaskId], references: [id])
+}
+
+model Expense {
+  id             String      @id @default(cuid())
+  amount         Float
+  category       String
+  description    String?
+  type           ExpenseType @default(INTERNAL)
+  billDate       DateTime
+  isRefunded     Boolean     @default(false)
+  isSubscription Boolean     @default(false)
+  interval       String? // e.g. "MONTHLY", "YEARLY"
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id])
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
