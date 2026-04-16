@@ -1,29 +1,29 @@
-import { TicketPriority } from '@prisma/client';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+import { generateText } from 'ai';
 
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-const MODEL = "google/gemini-2.0-flash-exp:free"; // Defaulting to a free model for robustness, can be changed.
+const OPENROUTER_API_KEY = process.env.OPENROUTER_KEY || process.env.OPENROUTER_API_KEY;
 
-export interface AITicket {
-  title: string;
-  description: string;
-  priority: TicketPriority;
-  subtasks?: AISubtask[];
-}
+// Creamos un proveedor nativo para OpenRouter
+const openrouter = createOpenRouter({
+  apiKey: OPENROUTER_API_KEY || 'MISSING_KEY',
+  headers: {
+    "HTTP-Referer": "https://ob-workspace.com",
+    "X-Title": "OB Workspace",
+  }
+});
 
-export interface AISubtask {
-  title: string;
-  estimatedTime: number; // in minutes
-}
+// Modelo extremadamente barato, eficiente y muy inteligente para estructurar.
+const MODEL = "openai/gpt-4o-mini";
 
 const SYSTEM_PROMPT = `
-You are a project management assistant for 'OB-OfficeManagement', an internal tool for office task management.
+You are a project management assistant for 'OB-Workspace', an internal tool for office task management.
 Your goal is to help users creating tickets through a chat interface.
 
 When a user describes a task or problem, you should:
 1. Identify if they want to create a ticket.
-2. Extract or propose a clear Title, a detailed Description, a Priority (LOW, MEDIUM, HIGH, URGENT), and a list of Subtasks with estimated time in minutes.
-3. If information is missing, ask clarifying questions.
-4. Once you have enough information, you MUST provide a structured JSON object at the end of your response or as your response, encapsulated between Triple Backticks and the tag 'JSON_PROPOSAL'.
+2. Structure a clear Title, a detailed Description, a Priority (LOW, MEDIUM, HIGH, URGENT), and a list of Subtasks with estimated time in minutes.
+3. CRITICAL LIMITATION: DO NOT ASK CLARIFYING QUESTIONS unless the request is completely incomprehensible. If information is missing (like brand, model, priority, or time estimates), you MUST ASSUME IT, guess it based on context, or use standard defaults. YOU ARE EXPECTED TO DEDUCE the time estimates for the subtasks yourself based on typical industry standards. If priority is not mentioned, decide it yourself or default to MEDIUM.
+4. Provide the structured JSON object IMMEDIATELY, encapsulated between Triple Backticks and the tag 'JSON_PROPOSAL'. Do not delay the creation of the ticket.
 
 The JSON structure for proposals should be:
 {
@@ -39,59 +39,37 @@ The JSON structure for proposals should be:
 }
 
 Example response with proposal:
-"Certainly! I've drafted a ticket based on our conversation.
+"Por supuesto. He estructurado un requerimiento basado en la información.
 
 \`\`\`JSON_PROPOSAL
 {
   "type": "ticket_proposal",
   "data": {
-    "title": "Fix login bug",
-    "description": "Users are unable to login when using Safari browser.",
+    "title": "Reparar error de autenticación en Safari",
+    "description": "Los usuarios no pueden hacer login.",
     "priority": "HIGH",
     "subtasks": [
-      { "title": "Reproduce bug in Safari", "estimatedTime": 30 },
-      { "title": "Identify root cause", "estimatedTime": 60 },
-      { "title": "Deploy fix", "estimatedTime": 15 }
+      { "title": "Reproducir bug de Safari", "estimatedTime": 30 },
+      { "title": "Implementar solución", "estimatedTime": 60 }
     ]
   }
 }
 \`\`\`"
 
-Always be professional and helpful. Use the 'Inter' font aesthetic in your descriptions (be concise but clear).
+Always be professional and helpful. Keep your replies structured.
 `;
 
-async function openRouterRequest(messages: { role: string; content: string }[]) {
+export async function chatWithAI(messages: { role: 'user' | 'assistant' | 'system'; content: string }[]) {
   if (!OPENROUTER_API_KEY) {
-    throw new Error("OPENROUTER_API_KEY is not defined in environment variables.");
+    throw new Error("La clave de API (OPENROUTER_KEY) no está definida en tu .env.");
   }
 
-  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-      "Content-Type": "application/json",
-      "HTTP-Referer": "https://ob-officemanagement.com",
-      "X-Title": "OB Office Management",
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      messages: messages,
-    }),
+  const { text } = await generateText({
+    model: openrouter(MODEL),
+    system: SYSTEM_PROMPT,
+    messages: messages as any, // Mapeado interno directo
+    maxOutputTokens: 1000,
   });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(`OpenRouter API error: ${JSON.stringify(errorData)}`);
-  }
-
-  const data = await response.json();
-  return data.choices[0].message.content;
-}
-
-export async function chatWithAI(messages: { role: 'user' | 'assistant' | 'system'; content: string }[]) {
-  const fullMessages = [
-    { role: "system", content: SYSTEM_PROMPT },
-    ...messages
-  ];
-  return await openRouterRequest(fullMessages);
+  return text;
 }

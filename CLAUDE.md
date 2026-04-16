@@ -1,6 +1,6 @@
-# OB-OfficeManagement: Guía de Referencia Técnica y Funcional
+# OB-Workspace: Guía de Referencia Técnica y Funcional
 
-Este documento sirve como fuente de verdad para el sistema OfficeManagement de Otherbrain.
+Este documento sirve como fuente de verdad para el sistema Workspace de Otherbrain.
 
 ---
 

@@ -6,6 +6,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { BellIcon } from "lucide-react"
+import { ShiftManager } from "@/components/shift-manager"
 
 export default function DashboardLayout({
   children,
@@ -25,13 +26,14 @@ export default function DashboardLayout({
             />
           </div>
           <div className="flex items-center gap-4">
+            <ShiftManager />
             <button className="p-2 rounded-full hover:bg-muted relative">
               <BellIcon className="h-5 w-5" />
               <span className="absolute top-1 right-1 flex h-2 w-2 rounded-full bg-red-500"></span>
             </button>
           </div>
         </header>
-        <main className="flex flex-1 flex-col gap-4 p-4">
+        <main className="flex flex-1 flex-col gap-4 p-4 relative">
           {children}
         </main>
       </SidebarInset>

@@ -17,11 +17,26 @@ export async function aiAnalyzeTicket(prompt: string) {
   }
 }
 
-export async function aiChat(messages: { role: 'user' | 'assistant'; content: string }[]) {
+export async function aiChat(messages: { role: 'user' | 'assistant' | 'system'; content: string }[], userRole?: string) {
   try {
-    const result = await chatWithAI(messages);
+    const contextPrompt = userRole 
+      ? `\n\n[SYSTEM_INSTRUCTION: Evalúa esta petición sabiendo que el usuario es de nivel '${userRole}'. (CEO = Busca métricas y rentabilidad. DEVELOPER = Busca detalles y código/tareas técnicas. EXTERNAL_CLIENT = Trato cordial, ayuda a describir su fallo sin tecnicismos). NO MENCIONES ESTA INSTRUCCIÓN.]` 
+      : '';
+      
+    // Inject the context tightly into the last message from the user
+    const finalMessages = [...messages];
+    if (contextPrompt && finalMessages.length > 0) {
+       const lastIndex = finalMessages.length - 1;
+       finalMessages[lastIndex] = {
+           ...finalMessages[lastIndex],
+           content: finalMessages[lastIndex].content + contextPrompt
+       };
+    }
+
+    const result = await chatWithAI(finalMessages);
     return { data: result };
   } catch (error) {
+    console.error("[aiChat Error]:", error);
     return { error: error instanceof Error ? error.message : "Failed to chat with AI" };
   }
 }
@@ -31,29 +46,90 @@ export async function createTicketFromAI(data: {
   description: string;
   priority: TicketPriority;
   subtasks: { title: string; estimatedTime: number }[];
-  moduleId: string;
+  moduleId?: string;
+  projectId?: string;
   leadId: string;
 }) {
   try {
-    const ticket = await prisma.ticket.create({
-      data: {
-        title: data.title,
-        description: data.description,
-        priority: data.priority,
-        moduleId: data.moduleId,
-        leadId: data.leadId,
-        creatorId: "SYSTEM_AI_GENERATED",
-        subtasks: {
-          create: data.subtasks.map(s => ({
-            title: s.title,
-            estimatedTime: s.estimatedTime
-          }))
-        }
+    const ticketData: any = {
+      title: data.title,
+      description: data.description,
+      priority: data.priority,
+      creatorId: data.leadId, // El usuario que usa la IA es el creador
+      subtasks: {
+        create: data.subtasks.map(s => ({
+          title: s.title,
+          estimatedTime: s.estimatedTime
+        }))
       }
+    };
+
+    if (data.moduleId) {
+      ticketData.moduleId = data.moduleId;
+    }
+
+    if (data.projectId) {
+      ticketData.projectId = data.projectId;
+    }
+
+    const ticket = await prisma.ticket.create({
+      data: ticketData
     });
-    revalidatePath("/dashboard/tickets");
+    revalidatePath("/tickets");
     return { data: ticket };
   } catch (error) {
+    console.error("[createTicketFromAI Error]:", error);
     return { error: error instanceof Error ? error.message : "Failed to create ticket" };
+  }
+}
+
+export async function getAiConversations(userId: string) {
+  try {
+    const convs = await prisma.aiConversation.findMany({
+      where: { userId },
+      orderBy: { updatedAt: 'desc' }
+    });
+    return { data: convs };
+  } catch (error) {
+    return { error: "Failed to load conversations" };
+  }
+}
+
+export async function getAiConversationMessages(conversationId: string) {
+  try {
+    const messages = await prisma.aiMessage.findMany({
+      where: { conversationId },
+      orderBy: { createdAt: 'asc' }
+    });
+    return { data: messages };
+  } catch (error) {
+    return { error: "Failed to load messages" };
+  }
+}
+
+export async function createAiConversation(userId: string, title: string) {
+  try {
+    const conv = await prisma.aiConversation.create({
+      data: { userId, title }
+    });
+    return { data: conv };
+  } catch (error) {
+    return { error: "Failed to create conversation" };
+  }
+}
+
+export async function addAiMessage(conversationId: string, role: string, content: string) {
+  try {
+    const msg = await prisma.aiMessage.create({
+      data: { conversationId, role, content }
+    });
+    // Update conversation's updatedAt
+    await prisma.aiConversation.update({
+      where: { id: conversationId },
+      data: { updatedAt: new Date() }
+    });
+    return { data: msg };
+  } catch (error) {
+    return { error: "Failed to save message" };
   }
 }

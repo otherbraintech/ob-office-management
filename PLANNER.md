@@ -1,6 +1,6 @@
-# Planificación del Sistema SaaS Interno: OB-OfficeManagement
+# Planificación del Sistema SaaS Interno: OB-Workspace
 
-Este documento sirve como la guía principal para el desaorrollo completo de la plataforma OB-OfficeManagement. A continuación se detalla la planificación lógica, arquitectónica y conceptual del sistema, libre de código, orientada a mantener escalabilidad y buenas prácticas.
+Este documento sirve como la guía principal para el desaorrollo completo de la plataforma OB-Workspace. A continuación se detalla la planificación lógica, arquitectónica y conceptual del sistema, libre de código, orientada a mantener escalabilidad y buenas prácticas.
 
 ---
 
@@ -57,7 +57,7 @@ El proyecto se dividirá en los siguientes módulos principales para facilitar s
 La estructura respetará el estándar de Next.js App Router (colocation):
 
 ```
-ob-office-management/
+ob-workspace/
 ├── app/
 │   ├── (auth)/                # Pantallas de login, registro, recuperación
 │   ├── (dashboard)/           # Layout principal autenticado

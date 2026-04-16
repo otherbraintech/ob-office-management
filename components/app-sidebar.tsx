@@ -7,6 +7,7 @@ import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
 import { TeamSwitcher } from "@/components/team-switcher"
+import { ModeToggle } from "@/components/mode-toggle"
 import {
   Sidebar,
   SidebarContent,
@@ -24,10 +25,11 @@ import {
   Briefcase,
   Building2,
   Users,
-  Sparkles
+  Sparkles,
+  HelpCircle
 } from "lucide-react"
 
-// This is the real structure of OB-OfficeManagement.
+// This is the real structure of OB-Workspace.
 const data = {
   user: {
     name: "Usuario",
@@ -36,7 +38,7 @@ const data = {
   },
   teams: [
     {
-      name: "OB-OfficeManagement",
+      name: "OB-Workspace",
       logo: (
         <Building2 />
       ),
@@ -56,7 +58,7 @@ const navItems = [
       title: "Asistente IA",
       url: "/ai-assistant",
       icon: <Sparkles />,
-      roles: ["CEO", "DEVELOPER"]
+      roles: ["CEO", "DEVELOPER", "INTERN", "EXTERNAL_CLIENT"]
     },
     {
       title: "Requerimientos",
@@ -66,13 +68,26 @@ const navItems = [
       items: [
          { title: "Portal de Cliente", url: "/tickets/me", roles: ["EXTERNAL_CLIENT"] },
          { title: "Mis Tareas Asignadas", url: "/tickets/me", roles: ["CEO", "DEVELOPER", "INTERN"] },
-         { title: "Tablero General", url: "/tickets", roles: ["CEO", "DEVELOPER", "INTERN"] }
+         { title: "Tablero de Lista", url: "/tickets", roles: ["CEO", "DEVELOPER", "INTERN"] },
+         { title: "Kanban General", url: "/kanban", roles: ["CEO", "DEVELOPER", "INTERN"] }
       ]
+    },
+    {
+      title: "Control de Tiempos",
+      url: "/time-tracking",
+      icon: <Timer />,
+      roles: ["CEO", "DEVELOPER", "INTERN"]
     },
     {
       title: "Proyectos",
       url: "/projects",
       icon: <Briefcase />,
+      roles: ["CEO", "DEVELOPER", "INTERN"]
+    },
+    {
+      title: "Directorio de Equipo",
+      url: "/team",
+      icon: <Users />,
       roles: ["CEO", "DEVELOPER", "INTERN"]
     },
     {
@@ -93,13 +108,19 @@ const navItems = [
       roles: ["CEO"]
     },
     {
+      title: "Guía de Estructura",
+      url: "/help",
+      icon: <HelpCircle />,
+      roles: ["CEO", "DEVELOPER", "INTERN", "EXTERNAL_CLIENT"]
+    },
+    {
       title: "Configuración",
       url: "/settings",
       icon: <Settings2 />,
       roles: ["CEO"],
       items: [
          { title: "General", url: "/settings" },
-         { title: "Gestión de Equipo", url: "/settings/team" }
+         { title: "Seguridad y Accesos", url: "/settings/security" }
       ]
     },
 ]
@@ -128,8 +149,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+      <SidebarHeader className="flex flex-row items-center justify-between">
+        <div className="flex-1">
+          <TeamSwitcher teams={data.teams} />
+        </div>
+        <div className="pr-4">
+          <ModeToggle />
+        </div>
       </SidebarHeader>
       <SidebarContent>
         {user ? <NavMain items={filteredNavMain} /> : null}

@@ -25,9 +25,32 @@ export async function createModule(projectId: string, formData: FormData) {
   }
 
   const name = formData.get('name') as string;
+  const ticketIdsJson = formData.get('ticketIds') as string;
+  const ticketIds = ticketIdsJson ? JSON.parse(ticketIdsJson) : [];
 
-  return await prisma.module.create({
+  const createdModule = await prisma.module.create({
     data: { name, projectId }
+  });
+
+  if (ticketIds.length > 0) {
+    await prisma.ticket.updateMany({
+      where: { 
+        id: { in: ticketIds },
+        projectId: projectId // Seguridad extra: solo tickets de este proyecto
+      },
+      data: { moduleId: createdModule.id }
+    });
+  }
+
+  return createdModule;
+}
+
+export async function assignTicketToModule(ticketId: string, moduleId: string) {
+  const session = await getSession();
+  
+  return await prisma.ticket.update({
+    where: { id: ticketId },
+    data: { moduleId }
   });
 }
 

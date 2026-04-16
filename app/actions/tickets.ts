@@ -1,86 +1,318 @@
-"use server"
+'use server';
 
-import { prisma } from '@/lib/prisma';
-import { getSession } from './auth';
-import { can } from '@/lib/permissions';
-import { TicketPriority, TicketStatus, SubtaskStatus } from '@prisma/client';
+import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 
-export async function createTicket(formData: FormData) {
-  const session = await getSession();
-  if (!can(session, 'create', 'Ticket')) {
-    throw new Error('Unauthorized');
-  }
-
-  const title = formData.get('title') as string;
-  const description = formData.get('description') as string;
-  const moduleId = formData.get('moduleId') as string;
-  const priority = (formData.get('priority') as TicketPriority) || 'MEDIUM';
-
-  // TODO: Assign a real lead (maybe CEO or dev). For now, the creator itself or a system default if external client.
-  const leadId = session.role === "EXTERNAL_CLIENT" ? "CEO_ID_HOLDER" : session.id;
-
-  return await prisma.ticket.create({
-    data: {
-      title,
-      description,
-      moduleId,
-      priority,
-      creatorId: session.id,
-      leadId: leadId
+export async function updateTicketAssignees(ticketId: string, leadId: string | null, collaboratorIds: string[]) {
+    try {
+        await prisma.ticket.update({
+            where: { id: ticketId },
+            data: { 
+                leadId: leadId,
+                collaborators: {
+                    set: collaboratorIds.map(id => ({ id }))
+                }
+            }
+        });
+        revalidatePath("/tickets");
+        revalidatePath("/tickets/me");
+        revalidatePath("/kanban");
+        return { success: true };
+    } catch (e) {
+        console.error("Assignees Update Error:", e);
+        return { error: "No se pudieron actualizar los responsables" };
     }
-  });
 }
 
-export async function createSubtask(ticketId: string, title: string, estimatedTime: number) {
-   const session = await getSession();
-   const ticket = await prisma.ticket.findUnique({ where: { id: ticketId }, include: { collaborators: true } });
-   
-   if (!can(session, 'update', 'Ticket', ticket)) {
-       throw new Error('Unauthorized');
-   }
-
-   return await prisma.subtask.create({
-     data: {
-        title,
-        estimatedTime, // minutos
-        ticketId
-     }
-   })
+export async function assignTicket(ticketId: string, userId: string) {
+    return updateTicketAssignees(ticketId, userId, []);
 }
 
-export async function updateTicketStatus(ticketId: string, status: TicketStatus) {
-    const session = await getSession();
-    const ticket = await prisma.ticket.findUnique({ where: { id: ticketId }, include: { collaborators: true } });
-    if (!can(session, 'update', 'Ticket', ticket)) {
-        throw new Error('Unauthorized');
+export async function updateSubtaskTime(subtaskId: string, minutes: number) {
+    try {
+        await prisma.subtask.update({
+            where: { id: subtaskId },
+            data: { estimatedTime: minutes }
+        });
+        revalidatePath("/tickets");
+        return { success: true };
+    } catch (e) {
+        return { error: "No se pudo actualizar el tiempo" };
     }
-    return await prisma.ticket.update({
-        where: { id: ticketId },
-        data: { status }
-    })
 }
 
-export async function getTickets(moduleId?: string) {
-    const session = await getSession();
-    if (!session) return [];
-
-    let whereClause: any = {};
-    if (moduleId) whereClause.moduleId = moduleId;
-    
-    if (session.role === "EXTERNAL_CLIENT") {
-        whereClause.creatorId = session.id;
+export async function addSubtaskToTicket(ticketId: string, title: string, estimatedTime: number) {
+    try {
+        await prisma.subtask.create({
+            data: {
+                title,
+                estimatedTime,
+                ticketId
+            }
+        });
+        revalidatePath("/tickets");
+        return { success: true };
+    } catch (e) {
+        return { error: "No se pudo añadir la sub-tarea" };
     }
+}
 
+export async function deleteSubtask(subtaskId: string) {
+    try {
+        await prisma.subtask.delete({
+            where: { id: subtaskId }
+        });
+        revalidatePath("/tickets");
+        return { success: true };
+    } catch (e) {
+        return { error: "No se pudo eliminar la sub-tarea" };
+    }
+}
+
+export async function unassignTicket(ticketId: string) {
+    try {
+        console.log(`[Unassigning Ticket via Raw SQL]: ${ticketId}`);
+        await prisma.$executeRaw`UPDATE "Ticket" SET "leadId" = NULL WHERE id = ${ticketId}`;
+        
+        revalidatePath("/tickets");
+        revalidatePath("/tickets/me");
+        revalidatePath("/");
+        return { success: true };
+    } catch (e) {
+        console.error(`[Unassigning Raw Error]:`, e);
+        return { error: "No se pudo desasignar el ticket" };
+    }
+}
+
+export async function rebuildTicketSubtasks(ticketId: string, subtasks: { title: string, estimatedTime: number }[]) {
+    try {
+        await prisma.$transaction([
+            prisma.subtask.deleteMany({ where: { ticketId } }),
+            prisma.ticket.update({
+                where: { id: ticketId },
+                data: {
+                    subtasks: {
+                        create: subtasks.map((s, index) => ({
+                            title: s.title,
+                            estimatedTime: s.estimatedTime,
+                            order: index
+                        }))
+                    }
+                }
+            })
+        ]);
+        revalidatePath("/tickets");
+        return { success: true };
+    } catch (e: any) {
+        console.error(`[Rebuild Error]:`, e);
+        return { error: e.message || "No se pudo reconstruir la estructura del ticket" };
+    }
+}
+
+export async function reorderSubtask(subtaskId: string, direction: 'UP' | 'DOWN') {
+    try {
+        const subtask = await prisma.subtask.findUnique({ where: { id: subtaskId } });
+        if (!subtask) return { error: "No se encontró la sub-tarea" };
+
+        const other = await prisma.subtask.findFirst({
+            where: {
+                ticketId: subtask.ticketId,
+                order: direction === 'UP' ? { lt: subtask.order } : { gt: subtask.order }
+            },
+            orderBy: { order: direction === 'UP' ? 'desc' : 'asc' }
+        });
+
+        if (other) {
+            await prisma.$transaction([
+                prisma.subtask.update({ where: { id: subtaskId }, data: { order: other.order } }),
+                prisma.subtask.update({ where: { id: other.id }, data: { order: subtask.order } })
+            ]);
+        }
+        revalidatePath("/tickets");
+        return { success: true };
+    } catch (e) {
+        return { error: "No se pudo reordenar" };
+    }
+}
+export async function updateTicketStatus(ticketId: string, status: any) {
+    try {
+        // Si el ticket vuelve a la cola, cerramos todas sus sesiones operativas activas
+        if (status === 'TODO' || status === 'BACKLOG') {
+            const activeSessions = await prisma.workSession.findMany({
+                where: { ticketId: ticketId, endTime: null }
+            });
+            for (const session of activeSessions) {
+                const endTime = new Date();
+                const durationMinutes = Math.round((endTime.getTime() - session.startTime.getTime()) / 60000);
+                await prisma.$transaction([
+                    prisma.workSession.update({
+                        where: { id: session.id },
+                        data: { endTime, duration: durationMinutes }
+                    }),
+                    prisma.ticket.update({
+                        where: { id: ticketId },
+                        data: { realTime: { increment: durationMinutes } }
+                    })
+                ]);
+            }
+        }
+
+        await prisma.ticket.update({
+            where: { id: ticketId },
+            data: { status }
+        });
+        revalidatePath("/tickets");
+        revalidatePath("/kanban");
+        return { success: true };
+    } catch (e) {
+        return { error: "No se pudo actualizar el estado del ticket" };
+    }
+}
+
+/**
+ * Mueve un ticket a una nueva posición (status + order)
+ * Si newIndex es proporcionado, reordena los tickets en la columna de destino
+ */
+export async function moveTicket(ticketId: string, newStatus: any, newIndex?: number) {
+    try {
+        if (newStatus === 'TODO' || newStatus === 'BACKLOG') {
+            const activeSessions = await prisma.workSession.findMany({
+                where: { ticketId: ticketId, endTime: null }
+            });
+            for (const session of activeSessions) {
+                const endTime = new Date();
+                const durationMinutes = Math.round((endTime.getTime() - session.startTime.getTime()) / 60000);
+                await prisma.$transaction([
+                    prisma.workSession.update({
+                        where: { id: session.id },
+                        data: { endTime, duration: durationMinutes }
+                    }),
+                    prisma.ticket.update({
+                        where: { id: ticketId },
+                        data: { realTime: { increment: durationMinutes } }
+                    })
+                ]);
+            }
+        }
+
+        // Obtenemos los tickets de la columna de destino ordenados por 'order'
+        const ticketsInCol = await prisma.ticket.findMany({
+            where: { status: newStatus },
+            orderBy: { order: 'asc' }
+        });
+
+        const otherTickets = ticketsInCol.filter(t => t.id !== ticketId);
+        
+        if (newIndex !== undefined) {
+            // Insertamos el ticket en la nueva posición
+            otherTickets.splice(newIndex, 0, { id: ticketId } as any);
+        } else {
+            // Al final
+            otherTickets.push({ id: ticketId } as any);
+        }
+
+        // Actualización atómica de todos los órdenes en esa columna
+        await prisma.$transaction(
+            otherTickets.map((t, idx) => 
+                prisma.ticket.update({
+                    where: { id: t.id },
+                    data: { 
+                        status: newStatus,
+                        order: idx 
+                    }
+                })
+            )
+        );
+
+        revalidatePath("/kanban");
+        revalidatePath("/tickets");
+        return { success: true };
+    } catch (e) {
+        console.error("Move Ticket Error:", e);
+        return { error: "No se pudo mover el ticket" };
+    }
+}
+
+export async function createTicket(formData: FormData, creatorId: string, options: { moduleId?: string, projectId?: string }) {
+    try {
+        const title = formData.get('title') as string;
+        const description = formData.get('description') as string;
+        const priority = formData.get('priority') as any;
+
+        await prisma.ticket.create({
+            data: {
+                title,
+                description,
+                priority,
+                moduleId: options.moduleId || null,
+                projectId: options.projectId || null,
+                creatorId,
+                status: 'BACKLOG',
+            }
+        });
+        
+        revalidatePath(`/projects`);
+        revalidatePath("/tickets");
+        return { success: true };
+    } catch (e) {
+        console.error("Error creating ticket:", e);
+        return { error: "No se pudo crear el requerimiento" };
+    }
+}
+
+export async function getOrphanTickets() {
     return await prisma.ticket.findMany({
-        where: whereClause,
-        include: {
-           lead: true,
-           subtasks: true,
-           collaborators: true,
-           module: {
-              include: { project: true }
-           }
-        },
+        where: { projectId: null, moduleId: null },
         orderBy: { createdAt: 'desc' }
     });
+}
+
+export async function linkTicketToProject(ticketId: string, options: { projectId?: string, moduleId?: string }) {
+    try {
+        await prisma.ticket.update({
+            where: { id: ticketId },
+            data: { 
+                projectId: options.projectId || null,
+                moduleId: options.moduleId || null 
+            }
+        });
+        revalidatePath("/projects");
+        revalidatePath("/tickets");
+        if (options.projectId) revalidatePath(`/projects/${options.projectId}`);
+        return { success: true };
+    } catch(e) {
+        return { error: "No se pudo enlazar el ticket" };
+    }
+}
+export async function unlinkTicketFromProject(ticketId: string) {
+    const session = await getSession();
+    if (!session) throw new Error("Unauthorized");
+
+    try {
+        await prisma.ticket.update({
+            where: { id: ticketId },
+            data: { 
+                projectId: null,
+                moduleId: null
+            }
+        });
+        revalidatePath("/projects");
+        return { success: true };
+    } catch (e) {
+        return { error: "No se pudo desvincular el ticket" };
+    }
+}
+
+export async function cancelTicket(ticketId: string) {
+    try {
+        await prisma.ticket.update({
+            where: { id: ticketId },
+            data: { status: 'CANCELLED' }
+        });
+        revalidatePath("/");
+        revalidatePath("/kanban");
+        return { success: true };
+    } catch (e) {
+        return { error: "No se pudo cancelar el ticket" };
+    }
 }

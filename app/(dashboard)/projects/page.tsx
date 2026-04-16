@@ -6,6 +6,8 @@ import Link from "next/link";
 import { Briefcase, Activity, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
+import { CreateProjectDialog } from "./_components/CreateProjectDialog";
+
 export default async function ProjectsPage() {
     const session = await getSession();
     if (!session) redirect('/login');
@@ -19,11 +21,12 @@ export default async function ProjectsPage() {
                     <h1 className="text-3xl font-bold tracking-tight">Proyectos</h1>
                     <p className="text-muted-foreground">Gestiona y analiza el progreso funcional de los proyectos de la compañía.</p>
                 </div>
+                <CreateProjectDialog />
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {projects.map((project) => (
-                    <Link href={`/dashboard/projects/${project.id}`} key={project.id}>
+                    <Link href={`/projects/${project.id}`} key={project.id}>
                         <Card className="hover:border-primary/50 transition-colors cursor-pointer h-full">
                             <CardHeader className="pb-3">
                                 <div className="flex justify-between items-start">

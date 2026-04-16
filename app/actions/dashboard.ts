@@ -7,20 +7,20 @@ import { TicketStatus, TicketPriority, SubtaskStatus, ExpenseType } from '@prism
 // Projects
 export async function createProject(data: { name: string; description?: string }) {
   const project = await prisma.project.create({ data });
-  revalidatePath('/dashboard/projects');
+  revalidatePath('/projects');
   return project;
 }
 
 export async function updateProject(id: string, data: { name?: string; description?: string; status?: string }) {
   const project = await prisma.project.update({ where: { id }, data });
-  revalidatePath('/dashboard/projects');
+  revalidatePath('/projects');
   return project;
 }
 
 // Modules
 export async function createModule(data: { name: string; projectId: string }) {
   const module = await prisma.module.create({ data });
-  revalidatePath(`/dashboard/projects/${data.projectId}`);
+  revalidatePath(`/projects/${data.projectId}`);
   return module;
 }
 
@@ -30,16 +30,17 @@ export async function createTicket(data: {
   description?: string;
   priority: TicketPriority;
   moduleId: string;
-  leadId: string;
+  leadId?: string;
+  creatorId: string;
 }) {
   const ticket = await prisma.ticket.create({ data });
-  revalidatePath(`/dashboard/tickets`);
+  revalidatePath(`/tickets`);
   return ticket;
 }
 
 export async function updateTicketStatus(id: string, status: TicketStatus) {
   const ticket = await prisma.ticket.update({ where: { id }, data: { status } });
-  revalidatePath(`/dashboard/tickets`);
+  revalidatePath(`/tickets`);
   return ticket;
 }
 
@@ -64,7 +65,7 @@ export async function manageSubtask(data: {
       ticketId: data.ticketId,
     },
   });
-  revalidatePath(`/dashboard/tickets/${data.ticketId}`);
+  revalidatePath(`/tickets/${data.ticketId}`);
   return subtask;
 }
 
@@ -108,7 +109,7 @@ export async function recordExpense(data: {
   projectId?: string;
 }) {
   const expense = await prisma.expense.create({ data });
-  revalidatePath('/dashboard/expenses');
+  revalidatePath('/finances');
   return expense;
 }
 

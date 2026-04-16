@@ -6,13 +6,18 @@ import { prisma } from '@/lib/prisma';
 import { AuthUser } from '@/lib/permissions';
 
 export async function login(formData: FormData) {
-  const email = formData.get('email') as string;
+  const identifier = formData.get('identifier') as string;
   const password = formData.get('password') as string;
 
-  if (email && password) {
-    // Buscar usuario real en base de datos
-    const user = await prisma.user.findUnique({
-      where: { email }
+  if (identifier && password) {
+    // Buscar usuario por email o username
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: identifier },
+          { username: identifier }
+        ]
+      }
     });
 
     if (user && user.password === password) {
@@ -21,7 +26,8 @@ export async function login(formData: FormData) {
       const sessionUser: AuthUser = {
         id: user.id,
         role: user.role,
-        email: user.email
+        email: user.email,
+        username: user.username
       };
 
       cookieStore.set('session', JSON.stringify(sessionUser), {
@@ -32,10 +38,97 @@ export async function login(formData: FormData) {
       });
       redirect('/dashboard');
     } else {
-      // Manejo de error de validación - en un entorno real se devuelve un error de action state
-      console.error("Invalid credentials");
-      return { error: "Invalid credentials" };
+      console.error("Credenciales inválidas");
+      return { error: "Credenciales inválidas" };
     }
+  }
+}
+
+export async function signup(formData: FormData) {
+  const name = formData.get('name') as string;
+  const username = formData.get('username') as string;
+  const email = formData.get('email') as string;
+  const password = formData.get('password') as string;
+  const confirmPassword = formData.get('confirm-password') as string;
+
+  if (password !== confirmPassword) {
+    return { error: "Las contraseñas no coinciden" };
+  }
+
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email },
+          { username }
+        ]
+      }
+    });
+
+    if (existingUser) {
+      return { error: "El email o nombre de usuario ya está en uso" };
+    }
+
+    const user = await prisma.user.create({
+      data: {
+        name,
+        username,
+        email,
+        password, // Nota: En producción, hashear la contraseña
+        role: 'DEVELOPER'
+      }
+    });
+
+    const cookieStore = await cookies();
+      
+    const sessionUser: AuthUser = {
+      id: user.id,
+      role: user.role,
+      email: user.email,
+      username: user.username
+    };
+
+    cookieStore.set('session', JSON.stringify(sessionUser), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 * 7, // 1 week
+      path: '/',
+    });
+    
+    redirect('/dashboard');
+  } catch (error) {
+    console.error("Error en registro:", error);
+    return { error: "Ocurrió un error al crear la cuenta" };
+  }
+}
+
+export async function updateProfile(userId: string, data: { name?: string, username?: string, image?: string }) {
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data
+    });
+
+    const cookieStore = await cookies();
+    const currentSession = await getSession();
+    
+    if (currentSession && currentSession.id === userId) {
+      const updatedSession: AuthUser = {
+        ...currentSession,
+        username: updatedUser.username || currentSession.username
+      };
+      cookieStore.set('session', JSON.stringify(updatedSession), {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 60 * 60 * 24 * 7,
+        path: '/',
+      });
+    }
+
+    return { data: updatedUser };
+  } catch (error: any) {
+    console.error("Error updating profile:", error);
+    return { error: "No se pudo actualizar el perfil. Quizás el nombre de usuario ya existe." };
   }
 }
 

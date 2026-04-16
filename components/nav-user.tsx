@@ -22,6 +22,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { ChevronsUpDownIcon, SparklesIcon, BadgeCheckIcon, CreditCardIcon, BellIcon, LogOutIcon } from "lucide-react"
+import Link from "next/link"
 
 export function NavUser({
   user,
@@ -73,35 +74,26 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <SparklesIcon
-                />
-                Mejorar a Pro
-              </DropdownMenuItem>
+              <Link href="/profile">
+                <DropdownMenuItem className="cursor-pointer">
+                  <BadgeCheckIcon />
+                  Mi Cuenta
+                </DropdownMenuItem>
+              </Link>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheckIcon
-                />
-                Cuenta
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCardIcon
-                />
-                Facturación
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <BellIcon
-                />
+              <DropdownMenuItem disabled className="opacity-50">
+                <BellIcon />
                 Notificaciones
+                <span className="ml-auto text-[10px] font-bold bg-muted px-1 rounded">Soon</span>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => logout()}>
-              <LogOutIcon
-              />
+            <DropdownMenuItem onClick={() => logout()} className="cursor-pointer text-destructive focus:text-destructive">
+              <LogOutIcon />
               Cerrar Sesión
             </DropdownMenuItem>
           </DropdownMenuContent>

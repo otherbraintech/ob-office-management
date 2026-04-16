@@ -16,7 +16,7 @@ export default async function MyTicketsPage() {
   if (isClient) {
      tickets = await prisma.ticket.findMany({
          where: { creatorId: session.id },
-         include: { subtasks: true, module: { include: { project: true } } },
+         include: { subtasks: true, module: { include: { project: true } }, collaborators: true },
          orderBy: { createdAt: 'desc' }
      });
   } else {
@@ -27,7 +27,7 @@ export default async function MyTicketsPage() {
                  { collaborators: { some: { id: session.id } } }
              ]
          },
-         include: { subtasks: true, module: { include: { project: true } } },
+         include: { subtasks: true, module: { include: { project: true } }, collaborators: true },
          orderBy: { createdAt: 'desc' }
      });
   }
@@ -65,10 +65,12 @@ export default async function MyTicketsPage() {
                 <div className="flex flex-col">
                   <span className="font-semibold">{ticket.title}</span>
                   <span className="text-xs text-muted-foreground mt-1 max-w-xl">{ticket.description}</span>
-                  <div className="flex items-center gap-2 mt-2">
-                     <Badge variant="outline" className="text-[10px]">{ticket.module.project.name}</Badge>
-                     <Badge variant="secondary" className="text-[10px]">{ticket.status}</Badge>
-                  </div>
+                   <div className="flex items-center gap-2 mt-2">
+                      <Badge variant="outline" className="text-[10px]">
+                        {ticket.module?.project?.name || "Bandeja de Entrada"}
+                      </Badge>
+                      <Badge variant="secondary" className="text-[10px]">{ticket.status}</Badge>
+                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <Badge variant={ticket.priority === 'HIGH' || ticket.priority === 'URGENT' ? 'destructive' : 'default'}>

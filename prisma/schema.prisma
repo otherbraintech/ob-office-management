@@ -15,9 +15,11 @@ enum Role {
 
 enum TicketStatus {
   BACKLOG
+  TODO
   IN_PROGRESS
-  REVIEW
+  TESTING
   DONE
+  CANCELLED
 }
 
 enum TicketPriority {
@@ -42,21 +44,25 @@ enum ExpenseType {
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
+  username  String?  @unique
   password  String?
   name      String?
+  image     String?
   role      Role     @default(DEVELOPER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relaciones
-  createdTickets   Ticket[]       @relation("TicketCreator")
-  ledTickets       Ticket[]       @relation("TicketLead")
-  sharedTickets    Ticket[]       @relation("TicketCollaborators")
+  createdTickets   Ticket[]         @relation("TicketCreator")
+  ledTickets       Ticket[]         @relation("TicketLead")
+  sharedTickets    Ticket[]         @relation("TicketCollaborators")
   assignedSubtasks Subtask[]
   workSessions     WorkSession[]
+  shifts           Shift[]
   expenses         Expense[]
   comments         Comment[]
   notifications    Notification[]
+  aiConversations  AiConversation[]
 }
 
 model Project {
@@ -68,8 +74,10 @@ model Project {
   updatedAt   DateTime @updatedAt
 
   // Estructura jerárquica
-  modules  Module[]
-  expenses Expense[]
+  modules   Module[]
+  expenses  Expense[]
+  documents ProjectDocument[]
+  tickets   Ticket[]
 }
 
 model Module {
@@ -86,17 +94,26 @@ model Ticket {
   description String?
   status      TicketStatus   @default(BACKLOG)
   priority    TicketPriority @default(MEDIUM)
-  moduleId    String
-  module      Module         @relation(fields: [moduleId], references: [id])
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+
+  moduleId String?
+  module   Module? @relation(fields: [moduleId], references: [id])
 
   creatorId     String
-  creator       User   @relation("TicketCreator", fields: [creatorId], references: [id])
-  leadId        String
-  lead          User   @relation("TicketLead", fields: [leadId], references: [id])
-  collaborators User[] @relation("TicketCollaborators")
+  creator       User    @relation("TicketCreator", fields: [creatorId], references: [id])
+  leadId        String?
+  lead          User?   @relation("TicketLead", fields: [leadId], references: [id])
+  collaborators User[]  @relation("TicketCollaborators")
+
+  estimatedTime Int           @default(0) // En minutos
+  realTime      Int           @default(0) // En minutos, acumulado de sesiones
+  workSessions  WorkSession[]
 
   subtasks  Subtask[]
   comments  Comment[]
+  order     Int           @default(0)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -107,6 +124,7 @@ model Subtask {
   status        SubtaskStatus @default(TODO)
   estimatedTime Int // En minutos
   realTime      Int           @default(0) // En minutos, acumulado de sesiones
+  order         Int           @default(0)
 
   ticketId String
   ticket   Ticket @relation(fields: [ticketId], references: [id])
@@ -128,8 +146,21 @@ model WorkSession {
   userId String
   user   User   @relation(fields: [userId], references: [id])
 
-  subtaskId String
-  subtask   Subtask @relation(fields: [subtaskId], references: [id])
+  ticketId  String?
+  ticket    Ticket?  @relation(fields: [ticketId], references: [id])
+
+  subtaskId String?
+  subtask   Subtask? @relation(fields: [subtaskId], references: [id])
+}
+
+model Shift {
+  id        String    @id @default(cuid())
+  startTime DateTime  @default(now())
+  endTime   DateTime?
+  duration  Int       @default(0) // En minutos
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 }
 
 model Expense {
@@ -172,4 +203,33 @@ model Notification {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
+}
+
+model AiConversation {
+  id        String      @id @default(cuid())
+  title     String
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  messages  AiMessage[]
+  updatedAt DateTime    @updatedAt
+  createdAt DateTime    @default(now())
+}
+
+model AiMessage {
+  id             String         @id @default(cuid())
+  role           String // 'user', 'assistant', 'system'
+  content        String
+  conversationId String
+  conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
+}
+
+model ProjectDocument {
+  id        String   @id @default(cuid())
+  name      String
+  content   String   @db.Text
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
