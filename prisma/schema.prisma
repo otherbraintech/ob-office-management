@@ -108,7 +108,12 @@ model Ticket {
   collaborators User[]  @relation("TicketCollaborators")
 
   estimatedTime Int           @default(0) // En minutos
-  realTime      Int           @default(0) // En minutos, acumulado de sesiones
+  realTime      Int           @default(0) // En segundos, acumulado histórico
+  
+  // Telemetría de ejecución en vivo
+  isActive      Boolean       @default(false)
+  lastStartedAt DateTime?
+
   workSessions  WorkSession[]
 
   subtasks  Subtask[]
@@ -123,7 +128,12 @@ model Subtask {
   title         String
   status        SubtaskStatus @default(TODO)
   estimatedTime Int // En minutos
-  realTime      Int           @default(0) // En minutos, acumulado de sesiones
+  realTime      Int           @default(0) // En segundos, acumulado histórico
+  
+  // Telemetría de ejecución en vivo
+  isActive      Boolean       @default(false)
+  lastStartedAt DateTime?
+
   order         Int           @default(0)
 
   ticketId String

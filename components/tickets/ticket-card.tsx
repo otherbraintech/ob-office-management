@@ -110,11 +110,17 @@ export function TicketCard({
             }
 
             // 2. Recover Master Mission Timer
-            const missionStart = localStorage.getItem(`mission_start_${ticket.id}`);
-            if (missionStart) {
-                const elapsed = Math.floor((Date.now() - parseInt(missionStart)) / 1000);
+            const localMissionStart = localStorage.getItem(`mission_start_${ticket.id}`);
+            
+            if (localMissionStart) {
+                const elapsed = Math.floor((Date.now() - parseInt(localMissionStart)) / 1000);
                 setTotalRealSeconds((ticket.realTime || 0) + elapsed);
-                setIsMasterActive(true); // Reanudar reloj visual si hay marca local
+                setIsMasterActive(true);
+            } else if (ticket.isActive && ticket.lastStartedAt) {
+                // Telemetría Oficial del Servidor
+                const elapsed = Math.floor((Date.now() - new Date(ticket.lastStartedAt).getTime()) / 1000);
+                setTotalRealSeconds((ticket.realTime || 0) + elapsed);
+                setIsMasterActive(true);
             } else {
                 setTotalRealSeconds(ticket.realTime || 0);
                 setIsMasterActive(false);
@@ -127,7 +133,7 @@ export function TicketCard({
         let interval: NodeJS.Timeout;
         if (activeSpeedrunId) {
             interval = setInterval(() => {
-                setSpeedrunSeconds(s => s + 1);
+                setSpeedrunSeconds((s: number) => s + 1);
             }, 1000);
         }
         return () => clearInterval(interval);
@@ -138,7 +144,7 @@ export function TicketCard({
         let interval: NodeJS.Timeout;
         if (ticket.status === 'IN_PROGRESS' && isMasterActive) {
             interval = setInterval(() => {
-                setTotalRealSeconds(s => s + 1);
+                setTotalRealSeconds((s: number) => s + 1);
             }, 1000);
         }
         return () => clearInterval(interval);

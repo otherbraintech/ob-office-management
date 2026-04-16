@@ -114,18 +114,23 @@ export async function pauseActiveTicket() {
     });
 
     if (activeSession) {
-        const duration = Math.round((new Date().getTime() - new Date(activeSession.startTime).getTime()) / 1000);
+        const now = new Date();
+        const sessionDuration = Math.round((now.getTime() - new Date(activeSession.startTime).getTime()) / 1000);
         
         await prisma.workSession.update({
             where: { id: activeSession.id },
-            data: { endTime: new Date(), duration }
+            data: { endTime: now, duration: sessionDuration }
         });
 
-        // Update total real time on the ticket
+        // Update total real time on the ticket and stop telemetry
         if (activeSession.ticketId) {
             await prisma.ticket.update({
                 where: { id: activeSession.ticketId },
-                data: { realTime: { increment: duration } }
+                data: { 
+                    realTime: { increment: sessionDuration },
+                    isActive: false,
+                    lastStartedAt: null
+                }
             });
         }
         
@@ -151,10 +156,14 @@ export async function resumeTicket(ticketId: string) {
     // Pause any currently active ticket
     await pauseActiveTicket();
 
-    // Move to in progress
+    // Move to in progress and start telemetry
     await prisma.ticket.update({
         where: { id: ticketId },
-        data: { status: 'IN_PROGRESS' }
+        data: { 
+            status: 'IN_PROGRESS',
+            isActive: true,
+            lastStartedAt: new Date()
+        }
     });
 
     // Start new session
