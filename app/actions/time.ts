@@ -37,7 +37,7 @@ export async function startShift(ticketId: string) {
     });
     
     for (const shift of existingShifts) {
-        const duration = Math.round((new Date().getTime() - new Date(shift.startTime).getTime()) / 60000);
+        const duration = Math.round((new Date().getTime() - new Date(shift.startTime).getTime()) / 1000);
         await prisma.shift.update({
             where: { id: shift.id },
             data: { endTime: new Date(), duration }
@@ -209,11 +209,13 @@ export async function completeSubtask(subtaskId: string, realTimeSeconds: number
         }
     });
 
-    // Opcionalmente, sumar ese tiempo directamente al ticket también
+    // Sumar ese tiempo directamente al ticket también
     const subtask = await prisma.subtask.findUnique({
         where: { id: subtaskId },
         select: { ticketId: true }
     });
+
+    let allDone = false;
 
     if (subtask?.ticketId) {
         await prisma.ticket.update({
@@ -221,7 +223,7 @@ export async function completeSubtask(subtaskId: string, realTimeSeconds: number
             data: { realTime: { increment: realTimeSeconds } }
         });
 
-        // AUTO-CIERRE: Si no quedan más subtareas pendientes, completar el ticket
+        // Verificar si todas las subtareas están completas (NO auto-cerrar)
         const remainingSubtasks = await prisma.subtask.count({
             where: {
                 ticketId: subtask.ticketId,
@@ -229,28 +231,9 @@ export async function completeSubtask(subtaskId: string, realTimeSeconds: number
             }
         });
 
-        if (remainingSubtasks === 0) {
-            // Cerrar sesión activa si existe
-            const activeSession = await prisma.workSession.findFirst({
-                where: { userId: session.id, ticketId: subtask.ticketId, endTime: null }
-            });
-            
-            if (activeSession) {
-                const now = new Date();
-                const sessionDuration = Math.round((now.getTime() - activeSession.startTime.getTime()) / 1000);
-                await prisma.workSession.update({
-                    where: { id: activeSession.id },
-                    data: { endTime: now, duration: sessionDuration }
-                });
-            }
-
-            await prisma.ticket.update({
-                where: { id: subtask.ticketId },
-                data: { status: 'DONE' }
-            });
-        }
+        allDone = remainingSubtasks === 0;
     }
 
     revalidatePath("/");
-    return { success: true };
+    return { success: true, allDone };
 }

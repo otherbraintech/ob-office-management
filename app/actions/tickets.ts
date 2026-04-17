@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { getSession } from "./auth";
 
 export async function updateTicketAssignees(ticketId: string, leadId: string | null, collaboratorIds: string[]) {
     try {
@@ -136,6 +137,14 @@ export async function reorderSubtask(subtaskId: string, direction: 'UP' | 'DOWN'
 }
 export async function updateTicketStatus(ticketId: string, status: any) {
     try {
+        const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
+        if (!ticket) return { error: "Ticket no encontrado" };
+
+        // Rigorous Validation: No lead = No operation
+        if ((status === 'TODO' || status === 'IN_PROGRESS') && !ticket.leadId) {
+            return { error: "BLOQUEO DE SEGURIDAD: Se requiere asignar un responsable antes de mover el ticket a estados operativos." };
+        }
+
         // Si el ticket vuelve a la cola, cerramos todas sus sesiones operativas activas
         if (status === 'TODO' || status === 'BACKLOG') {
             const activeSessions = await prisma.workSession.findMany({
@@ -171,28 +180,50 @@ export async function updateTicketStatus(ticketId: string, status: any) {
 
 /**
  * Mueve un ticket a una nueva posición (status + order)
- * Si newIndex es proporcionado, reordena los tickets en la columna de destino
  */
 export async function moveTicket(ticketId: string, newStatus: any, newIndex?: number) {
     try {
+        const ticket = await prisma.ticket.findUnique({
+            where: { id: ticketId },
+            include: { subtasks: true }
+        });
+
+        if (!ticket) return { error: "Ticket no encontrado" };
+
+        // 1. Rigorous Validation: No lead = No operation
+        if ((newStatus === 'TODO' || newStatus === 'IN_PROGRESS') && !ticket.leadId) {
+            return { error: "BLOQUEO DE SEGURIDAD: Se requiere asignar un responsable antes de mover el ticket a estados operativos." };
+        }
+
+        // 2. Automated Pause Logic
         if (newStatus === 'TODO' || newStatus === 'BACKLOG') {
             const activeSessions = await prisma.workSession.findMany({
                 where: { ticketId: ticketId, endTime: null }
             });
             for (const session of activeSessions) {
                 const endTime = new Date();
-                const durationMinutes = Math.round((endTime.getTime() - session.startTime.getTime()) / 60000);
+                const durationSeconds = Math.round((endTime.getTime() - session.startTime.getTime()) / 1000);
                 await prisma.$transaction([
                     prisma.workSession.update({
                         where: { id: session.id },
-                        data: { endTime, duration: durationMinutes }
+                        data: { endTime, duration: durationSeconds }
                     }),
                     prisma.ticket.update({
                         where: { id: ticketId },
-                        data: { realTime: { increment: durationMinutes } }
+                        data: { 
+                            realTime: { increment: Math.max(1, Math.round(durationSeconds / 60)) },
+                            isActive: false,
+                            lastStartedAt: null
+                        }
                     })
                 ]);
             }
+            
+            // Ensure ticket is deactivated even if no sessions found
+            await prisma.ticket.update({
+                where: { id: ticketId },
+                data: { isActive: false, lastStartedAt: null }
+            });
         }
 
         // Obtenemos los tickets de la columna de destino ordenados por 'order'
@@ -303,16 +334,53 @@ export async function unlinkTicketFromProject(ticketId: string) {
     }
 }
 
-export async function cancelTicket(ticketId: string) {
+export async function cancelTicket(ticketId: string, reason: string) {
     try {
         await prisma.ticket.update({
             where: { id: ticketId },
-            data: { status: 'CANCELLED' }
+            data: { 
+                status: 'CANCELLED',
+                cancelReason: reason,
+                isActive: false,
+                lastStartedAt: null
+            }
         });
         revalidatePath("/");
         revalidatePath("/kanban");
         return { success: true };
     } catch (e) {
         return { error: "No se pudo cancelar el ticket" };
+    }
+}
+
+export async function completeTicket(ticketId: string, comment?: string) {
+    try {
+        // Close any active sessions
+        const activeSessions = await prisma.workSession.findMany({
+            where: { ticketId, endTime: null }
+        });
+        for (const session of activeSessions) {
+            const endTime = new Date();
+            const durationSeconds = Math.round((endTime.getTime() - session.startTime.getTime()) / 1000);
+            await prisma.workSession.update({
+                where: { id: session.id },
+                data: { endTime, duration: durationSeconds }
+            });
+        }
+
+        await prisma.ticket.update({
+            where: { id: ticketId },
+            data: { 
+                status: 'TESTING',
+                completionComment: comment || null,
+                isActive: false,
+                lastStartedAt: null
+            }
+        });
+        revalidatePath("/");
+        revalidatePath("/kanban");
+        return { success: true };
+    } catch (e) {
+        return { error: "No se pudo completar el ticket" };
     }
 }

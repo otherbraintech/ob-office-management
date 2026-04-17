@@ -20,13 +20,13 @@ export default function HelpPage() {
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Guía de Estructura y Gestión</h1>
         </div>
         <p className="text-muted-foreground text-base md:text-lg">
-          Aprende cómo organizar el trabajo en OB-Workspace utilizando nuestra jerarquía de 4 niveles.
+          Aprende cómo organizar el trabajo en OB-Workspace utilizando nuestra jerarquía operativa.
         </p>
       </div>
 
       {/* Diagrama Jerárquico Reestructurado para Precisión de Líneas */}
       <div className="bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 p-4 md:p-8 rounded-none overflow-x-auto scrollbar-thin scrollbar-thumb-zinc-300 dark:scrollbar-thumb-zinc-700">
-        <div className="w-[850px] mx-auto h-[430px] relative font-sans">
+        <div className="w-[820px] mx-auto h-[450px] relative font-sans">
           
           {/* SVG Baseline para conectar todo */}
           <svg className="absolute inset-0 pointer-events-none w-full h-full overflow-visible" style={{ zIndex: 0 }}>
@@ -35,85 +35,71 @@ export default function HelpPage() {
                 <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" className="fill-zinc-300 dark:fill-zinc-700" />
               </marker>
             </defs>
+            {/* LÍNEA RAÍZ -> PROYECTO & INDEPENDIENTE */}
+            <path d="M 480 50 L 480 80" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" />
+            <path d="M 480 80 L 320 80 L 320 110" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" markerEnd="url(#arrowhead)" />
+            <path d="M 480 80 L 640 80 L 640 110" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" markerEnd="url(#arrowhead)" />
             
-            {/* LÍNEAS NIVEL 1 -> 2 */}
-            <path d="M 425 60 L 425 80" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" />
-            <path d="M 425 80 L 250 80 L 250 110" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" markerEnd="url(#arrowhead)" />
-            <path d="M 425 80 L 600 80 L 600 110" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" markerEnd="url(#arrowhead)" />
+            {/* LÍNEAS PROYECTO -> MÓDULO */}
+            <path d="M 320 160 L 320 210" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" markerEnd="url(#arrowhead)" />
             
-            {/* LÍNEAS TICKET DIRECTO */}
-            <path d="M 425 80 L 780 80 Q 780 80 780 210" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" markerEnd="url(#arrowhead)" />
+            {/* LÍNEAS MÓDULO -> TICKETS */}
+            <path d="M 320 260 L 320 285" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" />
+            <path d="M 320 285 L 190 285 L 190 310" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" markerEnd="url(#arrowhead)" />
+            <path d="M 320 285 L 450 285 L 450 310" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" markerEnd="url(#arrowhead)" />
 
-            {/* LÍNEAS NIVEL 2 -> 3 (Módulo A) */}
-            <path d="M 250 165 L 250 185" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" />
-            <path d="M 250 185 L 150 185 L 150 210" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" markerEnd="url(#arrowhead)" />
-            <path d="M 250 185 L 350 185 L 350 210" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" markerEnd="url(#arrowhead)" />
-
-            {/* LÍNEAS NIVEL 3 -> 4 (IA BREAKDOWN) */}
-            {/* Ticket 1 */}
-            <path d="M 150 270 L 150 330" fill="none" className="stroke-zinc-400 dark:stroke-zinc-600" strokeWidth="1" strokeDasharray="4" markerEnd="url(#arrowhead)" />
-            <g transform="translate(95, 290)">
-              <rect width="110" height="18" fill="white" className="fill-zinc-50 dark:fill-zinc-900 border border-zinc-200 dark:border-zinc-800" />
-              <text x="55" y="12" textAnchor="middle" className="text-[8px] font-bold uppercase tracking-tighter fill-primary/40">Desglose Automático IA</text>
-            </g>
-
-            {/* Ticket 2 */}
-            <path d="M 350 270 L 350 330" fill="none" className="stroke-zinc-400 dark:stroke-zinc-600" strokeWidth="1" strokeDasharray="4" markerEnd="url(#arrowhead)" />
-            <g transform="translate(295, 290)">
-              <rect width="110" height="18" fill="white" className="fill-zinc-50 dark:fill-zinc-900 border border-zinc-200 dark:border-zinc-800" />
-              <text x="55" y="12" textAnchor="middle" className="text-[8px] font-bold uppercase tracking-tighter fill-primary/40">Desglose Automático IA</text>
-            </g>
-
-            {/* Ticket 3 */}
-            <path d="M 780 270 L 780 330" fill="none" className="stroke-zinc-400 dark:stroke-zinc-600" strokeWidth="1" strokeDasharray="4" markerEnd="url(#arrowhead)" />
-            <g transform="translate(725, 290)">
-              <rect width="110" height="18" fill="white" className="fill-zinc-50 dark:fill-zinc-900 border border-zinc-200 dark:border-zinc-800" />
-              <text x="55" y="12" textAnchor="middle" className="text-[8px] font-bold uppercase tracking-tighter fill-primary/40">Desglose Automático IA</text>
-            </g>
+            {/* LÍNEAS TICKETS -> SUBTAREAS */}
+            <path d="M 190 360 L 190 410" fill="none" className="stroke-zinc-400 dark:stroke-zinc-600" strokeWidth="1" strokeDasharray="4" markerEnd="url(#arrowhead)" />
+            <path d="M 450 360 L 450 410" fill="none" className="stroke-zinc-400 dark:stroke-zinc-600" strokeWidth="1" strokeDasharray="4" markerEnd="url(#arrowhead)" />
+            <path d="M 640 160 L 640 410" fill="none" className="stroke-zinc-400 dark:stroke-zinc-600" strokeWidth="1" strokeDasharray="4" markerEnd="url(#arrowhead)" />
           </svg>
 
-          {/* NODOS (Posicionados de forma absoluta para matching perfecto) */}
+          {/* NODOS */}
           
           {/* Etiquetas a la izquierda */}
-          <div className="absolute left-0 top-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-50">Proyecto</div>
-          <div className="absolute left-0 top-130 text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-50" style={{top: '120px'}}>Módulo</div>
-          <div className="absolute left-0 top-230 text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-50" style={{top: '220px'}}>Ticket</div>
-          <div className="absolute left-0 top-340 text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-50" style={{top: '340px'}}>Subtarea</div>
+          <div className="absolute left-0 text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-30" style={{top: '10px'}}>Root</div>
+          <div className="absolute left-0 text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-30" style={{top: '110px'}}>Organización</div>
+          <div className="absolute left-0 text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-30" style={{top: '210px'}}>Módulo</div>
+          <div className="absolute left-0 text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-30" style={{top: '310px'}}>Ticket</div>
+          <div className="absolute left-0 text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-30" style={{top: '410px'}}>Subtarea</div>
 
-          {/* Nivel 1 */}
-          <div className="absolute" style={{ left: '325px', top: '10px' }}>
-            <DiagramNode icon={<Briefcase className="size-4" />} title="P [Proyecto]" id="1" />
+          {/* Nivel 1: ROOT */}
+          <div className="absolute" style={{ left: '395px', top: '10px' }}>
+            <DiagramNode icon={<Sparkles className="size-4" />} title="OB-Workspace" id="ROOT" />
+          </div>
+          
+          {/* Nivel 2: ORGANIZACIÓN */}
+          <div className="absolute" style={{ left: '235px', top: '110px' }}>
+            <DiagramNode icon={<Briefcase className="size-4" />} title="Proyecto Operativo" id="P1" />
+          </div>
+          <div className="absolute" style={{ left: '555px', top: '110px' }}>
+            <DiagramNode icon={<Ticket className="size-4" />} title="Ticket Suelto" id="T-IND" hasAI />
+          </div>
+          
+          {/* Nivel 3: MÓDULO */}
+          <div className="absolute" style={{ left: '235px', top: '210px' }}>
+            <DiagramNode icon={<Box className="size-4" />} title="Módulo Técnico" id="M1" />
+          </div>
+          
+          {/* Nivel 4: TICKET */}
+          <div className="absolute" style={{ left: '105px', top: '310px' }}>
+            <DiagramNode icon={<Ticket className="size-4" />} title="Ticket de Módulo A" id="T1" hasAI />
+          </div>
+          <div className="absolute" style={{ left: '365px', top: '310px' }}>
+            <DiagramNode icon={<Ticket className="size-4" />} title="Ticket de Módulo B" id="T2" hasAI />
+          </div>
+          
+          {/* Nivel 5: SUBTAREA */}
+          <div className="absolute" style={{ left: '105px', top: '410px' }}>
+            <DiagramNode icon={<ListTodo className="size-4" />} title="Task Técnica 1" id="S1" isSubtask />
+          </div>
+          <div className="absolute" style={{ left: '365px', top: '410px' }}>
+            <DiagramNode icon={<ListTodo className="size-4" />} title="Task Técnica 2" id="S2" isSubtask />
+          </div>
+          <div className="absolute" style={{ left: '555px', top: '410px' }}>
+            <DiagramNode icon={<ListTodo className="size-4" />} title="Task Independiente" id="S3" isSubtask />
           </div>
 
-          {/* Nivel 2 */}
-          <div className="absolute" style={{ left: '150px', top: '110px' }}>
-            <DiagramNode icon={<Box className="size-4" />} title="M1 [Módulo A]" id="2" />
-          </div>
-          <div className="absolute" style={{ left: '500px', top: '110px' }}>
-            <DiagramNode icon={<Box className="size-4" />} title="M2 [Módulo B]" id="5" />
-          </div>
-
-          {/* Nivel 3 */}
-          <div className="absolute" style={{ left: '50px', top: '215px' }}>
-            <DiagramNode icon={<Ticket className="size-4" />} title="T1 [Ticket 1]" id="1" hasAI />
-          </div>
-          <div className="absolute" style={{ left: '250px', top: '215px' }}>
-            <DiagramNode icon={<Ticket className="size-4" />} title="T2 [Ticket 2]" id="2" hasAI />
-          </div>
-          <div className="absolute" style={{ left: '680px', top: '215px' }}>
-            <DiagramNode icon={<Ticket className="size-4" />} title="T3 [Ticket Directo]" id="3" hasAI />
-          </div>
-
-          {/* Nivel 4 */}
-          <div className="absolute" style={{ left: '50px', top: '340px' }}>
-            <DiagramNode icon={<ListTodo className="size-4" />} title="S1 [Subtarea 1.1]" id="1" isSubtask />
-          </div>
-          <div className="absolute" style={{ left: '250px', top: '340px' }}>
-            <DiagramNode icon={<ListTodo className="size-4" />} title="S2 [Subtarea 1.2]" id="2" isSubtask />
-          </div>
-          <div className="absolute" style={{ left: '680px', top: '340px' }}>
-            <DiagramNode icon={<ListTodo className="size-4" />} title="S3 [Subtarea 3.1]" id="4" isSubtask />
-          </div>
 
         </div>
       </div>
@@ -174,9 +160,9 @@ export default function HelpPage() {
 function DiagramNode({ icon, title, id, hasAI, isSubtask }: { icon: any, title: string, id: string, hasAI?: boolean, isSubtask?: boolean }) {
   return (
     <div className={`
-      relative z-10 flex items-center gap-3 px-4 py-3 border bg-background shadow-sm
+      relative z-10 flex items-center gap-2.5 px-3.5 py-2.5 border bg-background shadow-sm
       ${isSubtask ? 'border-dashed text-muted-foreground' : 'font-bold'}
-      min-w-[180px] transition-all cursor-pointer group
+      min-w-[170px] transition-all cursor-pointer group
       hover:bg-primary hover:text-primary-foreground hover:border-primary
       hover:shadow-md
     `}>

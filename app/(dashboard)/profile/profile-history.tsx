@@ -6,14 +6,22 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 
 interface ProfileHistoryProps {
     totalHours: number;
+    manHoursCompleted: number;
     tickets: any[];
 }
 
-export function ProfileHistory({ totalHours, tickets }: ProfileHistoryProps) {
-    const formatTime = (minutes: number) => {
+export function ProfileHistory({ totalHours, manHoursCompleted, tickets }: ProfileHistoryProps) {
+    const formatTimeSeconds = (seconds: number) => {
+        const hrs = Math.floor(Math.abs(seconds) / 3600);
+        const mins = Math.floor((Math.abs(seconds) % 3600) / 60);
+        if (hrs > 0) return `${hrs}h ${mins}m`;
+        return `${mins}m ${Math.abs(seconds) % 60}s`;
+    };
+
+    const formatTimeMinutes = (minutes: number) => {
         const hrs = Math.floor(Math.abs(minutes) / 60);
         const mins = Math.abs(minutes) % 60;
-        return `${hrs}h ${mins}m`;
+        return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
     };
 
     return (
@@ -31,13 +39,24 @@ export function ProfileHistory({ totalHours, tickets }: ProfileHistoryProps) {
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="rounded-none border-2 border-foreground/5 bg-muted/10">
+                <Card className="rounded-none border-2 border-foreground/5 bg-green-500/5">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Misiones Completadas</CardTitle>
+                        <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Productividad (HH)</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="flex items-center gap-2">
-                            <CheckCircle2 className="size-5 text-green-500" />
+                            <Timer className="size-5 text-green-500" />
+                            <span className="text-3xl font-black font-mono">{manHoursCompleted}h</span>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card className="rounded-none border-2 border-foreground/5 bg-muted/10">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Misiones OK</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex items-center gap-2">
+                            <CheckCircle2 className="size-5 text-green-500/50" />
                             <span className="text-3xl font-black font-mono">{tickets.filter(t => t.status === 'DONE').length}</span>
                         </div>
                     </CardContent>
@@ -86,11 +105,11 @@ export function ProfileHistory({ totalHours, tickets }: ProfileHistoryProps) {
                                                     <div className="flex items-center gap-1.5">
                                                         {isUnderBudget ? (
                                                             <Badge variant="outline" className="rounded-none border-green-500 text-green-500 bg-green-500/10 font-mono font-black gap-1">
-                                                                <Rocket className="size-3" /> PROFIT +{formatTime(ticket.estimatedTime - ticket.realTime)}
+                                                                <Rocket className="size-3" /> PROFIT +{formatTimeSeconds((ticket.estimatedTime * 60) - ticket.realTime)}
                                                             </Badge>
                                                         ) : isOverBudget ? (
                                                             <Badge variant="outline" className="rounded-none border-red-500 text-red-500 bg-red-500/10 font-mono font-black gap-1">
-                                                                <AlertTriangle className="size-3" /> RETRASO -{formatTime(ticket.realTime - ticket.estimatedTime)}
+                                                                <AlertTriangle className="size-3" /> RETRASO -{formatTimeSeconds(ticket.realTime - (ticket.estimatedTime * 60))}
                                                             </Badge>
                                                         ) : null}
                                                     </div>
@@ -98,7 +117,7 @@ export function ProfileHistory({ totalHours, tickets }: ProfileHistoryProps) {
                                             ) : (
                                                 <div className="flex flex-col items-end">
                                                     <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1">Costo Real</span>
-                                                    <span className="font-mono font-bold text-sm text-muted-foreground">{formatTime(ticket.realTime || 0)}</span>
+                                                    <span className="font-mono font-bold text-sm text-muted-foreground">{formatTimeSeconds(ticket.realTime || 0)}</span>
                                                 </div>
                                             )}
                                             <ChevronDown className="size-4 text-muted-foreground group-data-[state=open]/collapsible:rotate-180 transition-transform" />
@@ -110,11 +129,11 @@ export function ProfileHistory({ totalHours, tickets }: ProfileHistoryProps) {
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4 border-b border-foreground/5">
                                             <div className="space-y-1">
                                                 <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Tiempo Estimado</span>
-                                                <p className="font-mono text-sm">{formatTime(ticket.estimatedTime)}</p>
+                                                <p className="font-mono text-sm">{formatTimeMinutes(ticket.estimatedTime)}</p>
                                             </div>
                                             <div className="space-y-1">
                                                 <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Tiempo Invertido</span>
-                                                <p className="font-mono text-sm">{formatTime(ticket.realTime)}</p>
+                                                <p className="font-mono text-sm">{formatTimeSeconds(ticket.realTime)}</p>
                                             </div>
                                             <div className="space-y-1">
                                                 <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Autor</span>
@@ -133,8 +152,8 @@ export function ProfileHistory({ totalHours, tickets }: ProfileHistoryProps) {
                                                         </div>
                                                         <div className="flex items-center gap-4 text-[10px] font-mono">
                                                             <span className="text-muted-foreground">Est: {st.estimatedTime}m</span>
-                                                            <span className={st.realTime > st.estimatedTime ? 'text-red-500 font-bold' : 'text-green-500 font-bold'}>
-                                                                Real: {st.realTime}m
+                                                            <span className={(st.realTime / 60) > st.estimatedTime ? 'text-red-500 font-bold' : 'text-green-500 font-bold'}>
+                                                                Real: {formatTimeSeconds(st.realTime)}
                                                             </span>
                                                         </div>
                                                     </div>

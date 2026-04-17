@@ -12,12 +12,15 @@ export default async function ProfilePage() {
         where: { id: session.id },
         include: {
             shifts: true,
+            workSessions: {
+                include: { ticket: true }
+            },
             ledTickets: {
-                include: { subtasks: true, project: true },
+                include: { subtasks: true, project: true, creator: true },
                 orderBy: { updatedAt: 'desc' }
             },
             sharedTickets: {
-                include: { subtasks: true, project: true },
+                include: { subtasks: true, project: true, creator: true },
                 orderBy: { updatedAt: 'desc' }
             }
         }
@@ -25,8 +28,13 @@ export default async function ProfilePage() {
 
     if (!user) redirect('/login');
 
-    const totalMinutes = user.shifts.reduce((acc, shift) => acc + shift.duration, 0);
-    const totalHours = Math.floor(totalMinutes / 60);
+    const totalSeconds = user.shifts.reduce((acc, shift) => acc + (shift.duration || 0), 0);
+    const totalHours = Number((totalSeconds / 3600).toFixed(1));
+
+    const completedTicketsSeconds = user.workSessions
+        .filter(ws => ws.ticket?.status === 'DONE' || ws.ticket?.status === 'TESTING')
+        .reduce((acc, ws) => acc + (ws.duration || 0), 0);
+    const manHoursCompleted = Number((completedTicketsSeconds / 3600).toFixed(1));
 
     // Merge tickets from led and shared, removing duplicates
     const allTicketsMap = new Map();
@@ -48,7 +56,11 @@ export default async function ProfilePage() {
             </div>
 
             <div className="pt-8 border-t-2 border-foreground/5">
-                <ProfileHistory totalHours={totalHours} tickets={allTickets} />
+                <ProfileHistory 
+                    totalHours={totalHours} 
+                    manHoursCompleted={manHoursCompleted}
+                    tickets={allTickets} 
+                />
             </div>
         </div>
     );

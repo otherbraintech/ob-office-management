@@ -153,7 +153,12 @@ export function KanbanColumn({ id, title, iconName, color, tickets, allUsers, cu
                                                 </Badge>
                                                 <div className="flex items-center gap-1 text-[9px] font-bold uppercase text-muted-foreground/60">
                                                     <Clock className="size-3" />
-                                                    {ticket.subtasks.length} tareas
+                                                    {(() => {
+                                                        const totalMin = ticket.subtasks.reduce((acc: number, st: { estimatedTime: number }) => acc + st.estimatedTime, 0);
+                                                        const hrs = Math.floor(totalMin / 60);
+                                                        const mins = totalMin % 60;
+                                                        return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+                                                    })()}
                                                 </div>
                                             </div>
                                             

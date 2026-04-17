@@ -114,6 +114,10 @@ model Ticket {
   isActive      Boolean       @default(false)
   lastStartedAt DateTime?
 
+  // Comentarios de cierre
+  cancelReason      String?
+  completionComment String?
+
   workSessions  WorkSession[]
 
   subtasks  Subtask[]
@@ -151,7 +155,7 @@ model WorkSession {
   id        String    @id @default(cuid())
   startTime DateTime  @default(now())
   endTime   DateTime?
-  duration  Int       @default(0) // En minutos
+  duration  Int       @default(0) // En segundos
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
@@ -167,7 +171,7 @@ model Shift {
   id        String    @id @default(cuid())
   startTime DateTime  @default(now())
   endTime   DateTime?
-  duration  Int       @default(0) // En minutos
+  duration  Int       @default(0) // En segundos
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
