@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Play, Square, Timer as TimerIcon, StopCircle, CheckCircle2, ListTodo, AlertTriangle, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { getActiveTimers, startShift, stopShift } from "@/app/actions/time";
+import { getActiveTimers, startShift, stopShift, pauseShift, resumeShift } from "@/app/actions/time";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { ScrollArea } from "./ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { Coffee, RotateCcw } from "lucide-react";
 
 export function ShiftManager() {
     const router = useRouter();
@@ -26,6 +27,9 @@ export function ShiftManager() {
     const [ticketRealSeconds, setTicketRealSeconds] = useState(0);
     const [activeTicket, setActiveTicket] = useState<any>(null);
 
+    // Break/Pause state
+    const [isShiftPaused, setIsShiftPaused] = useState(false);
+
     // Initial load
     useEffect(() => {
         let mounted = true;
@@ -34,12 +38,14 @@ export function ShiftManager() {
             
             if (data.shift) {
                 setShiftActive(true);
+                setIsShiftPaused(data.shift.isPaused);
                 const shiftDiff = Math.floor((new Date().getTime() - new Date(data.shift.startTime).getTime()) / 1000);
                 setShiftSeconds(shiftDiff);
             }
             
             if (data.ticketSession && data.ticketSession.ticket) {
-                setTicketActive(true);
+                // If shift is paused, don't auto-start ticket timer visually
+                setTicketActive(!data.shift?.isPaused);
                 const ticketDiff = Math.floor((new Date().getTime() - new Date(data.ticketSession.startTime).getTime()) / 1000);
                 const baseRealSeconds = (data.ticketSession.ticket.realTime || 0) * 60;
                 setTicketRealSeconds(baseRealSeconds + ticketDiff);
@@ -98,6 +104,40 @@ export function ShiftManager() {
         }
     };
 
+    const handlePauseShift = async () => {
+        setLoading(true);
+        try {
+            await pauseShift();
+            setIsShiftPaused(true);
+            setTicketActive(false);
+            toast.info("Turno en pausa - Todo detenido");
+            router.refresh();
+        } catch (e) {
+            toast.error("Error al pausar turno");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleResumeShift = async () => {
+        setLoading(true);
+        try {
+            await resumeShift();
+            setIsShiftPaused(false);
+            // Re-fetch or manually decide to resume ticket
+            const data = await getActiveTimers();
+            if (data?.ticketSession) {
+                setTicketActive(true);
+            }
+            toast.success("Turno reanudado");
+            router.refresh();
+        } catch (e) {
+            toast.error("Error al reanudar turno");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const deltaSeconds = ticketEstimate > 0 ? ticketEstimate - ticketRealSeconds : 0;
     const isDelayed = ticketEstimate > 0 && deltaSeconds < 0;
 
@@ -106,22 +146,41 @@ export function ShiftManager() {
             <div className="flex items-center gap-6 h-full px-4">
                 {/* Global Shift Timer */}
                 <div className="flex items-center gap-3">
-                    <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className={cn(
-                            "size-8 rounded-none transition-all",
-                            shiftActive ? "bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white" : "bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground"
+                    <div className="flex gap-1">
+                        <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className={cn(
+                                "size-8 rounded-none transition-all",
+                                shiftActive ? "bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white" : "bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground"
+                            )}
+                            onClick={() => shiftActive ? setOpenStop(true) : setOpenStart(true)}
+                        >
+                            {shiftActive ? <Square className="size-4" fill="currentColor" /> : <Play className="size-4" fill="currentColor" />}
+                        </Button>
+                        {shiftActive && (
+                            <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className={cn(
+                                    "size-8 rounded-none transition-all",
+                                    isShiftPaused ? "bg-orange-500 text-white" : "bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white"
+                                )}
+                                onClick={handlePauseShift}
+                                disabled={isShiftPaused}
+                            >
+                                <Coffee className="size-4" />
+                            </Button>
                         )}
-                        onClick={() => shiftActive ? setOpenStop(true) : setOpenStart(true)}
-                    >
-                        {shiftActive ? <Square className="size-4" fill="currentColor" /> : <Play className="size-4" fill="currentColor" />}
-                    </Button>
+                    </div>
                     <div className="flex flex-col justify-center">
                         <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground leading-none">
-                            Turno Global
+                            {isShiftPaused ? "En Pausa" : "Turno Global"}
                         </span>
-                        <span className={cn("font-mono font-bold text-sm leading-tight", shiftActive ? "text-foreground" : "text-muted-foreground/50")}>
+                        <span className={cn(
+                            "font-mono font-bold text-sm leading-tight", 
+                            shiftActive ? (isShiftPaused ? "text-orange-500 animate-pulse" : "text-foreground") : "text-muted-foreground/50"
+                        )}>
                             {formatTime(shiftSeconds)}
                         </span>
                     </div>
@@ -239,6 +298,51 @@ export function ShiftManager() {
                             </Button>
                         )}
                     </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Pause Overlay (Persistent while isShiftPaused) */}
+            <Dialog open={isShiftPaused} onOpenChange={() => {}}>
+                <DialogContent 
+                    className="max-w-none w-screen h-screen m-0 rounded-none border-none bg-background/95 backdrop-blur-xl flex flex-col items-center justify-center gap-12 z-[100]"
+                    onInteractOutside={(e) => e.preventDefault()}
+                    onEscapeKeyDown={(e) => e.preventDefault()}
+                >
+                    <div className="flex flex-col items-center gap-6 animate-in zoom-in-95 duration-500">
+                        <div className="size-32 bg-orange-500/10 border-4 border-orange-500/20 rounded-full flex items-center justify-center relative">
+                            <Coffee className="size-16 text-orange-500 animate-bounce" />
+                            <div className="absolute inset-0 rounded-full border-4 border-orange-500 animate-ping opacity-20" />
+                        </div>
+                        <div className="text-center space-y-2">
+                            <h2 className="text-6xl font-black uppercase tracking-tighter">Turno en Pausa</h2>
+                            <p className="text-xs font-bold uppercase tracking-[0.4em] text-muted-foreground opacity-60">Operación detenida temporalmente</p>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col items-center gap-2">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-orange-500/60">Tiempo Transcurrido</span>
+                        <div className="text-8xl font-mono font-black tracking-tighter tabular-nums text-foreground/40">
+                             {formatTime(shiftSeconds)}
+                        </div>
+                    </div>
+
+                    <Button 
+                        size="lg"
+                        className="h-20 px-16 rounded-none bg-foreground text-background hover:bg-foreground/80 font-black uppercase text-xl tracking-[0.2em] shadow-[15px_15px_0px_rgba(0,0,0,0.1)] transition-all hover:translate-x-1 hover:translate-y-1 hover:shadow-none active:scale-95"
+                        onClick={handleResumeShift}
+                        disabled={loading}
+                    >
+                        {loading ? <Loader2 className="size-8 animate-spin" /> : (
+                            <div className="flex items-center gap-4">
+                                <Play className="size-6 fill-current" />
+                                Reanudar Operaciones
+                            </div>
+                        )}
+                    </Button>
+
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30 animate-pulse">
+                        Todos los cronómetros de misiones activas están suspendidos
+                    </p>
                 </DialogContent>
             </Dialog>
         </>

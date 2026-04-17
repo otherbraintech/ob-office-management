@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getDocuments } from "@/app/actions/documents";
 import { PlanningTab } from "./_components/PlanningTab";
-import { CreateModuleDialog } from "./_components/CreateModuleDialog";
+import { EditProjectDialog } from "./_components/EditProjectDialog";
 import { ProjectStructure } from "./_components/ProjectStructure";
 
 export default async function ProjectDetailPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -24,14 +24,26 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 include: {
                     tickets: {
                         orderBy: { order: 'asc' },
-                        include: { subtasks: true }
+                        include: { 
+                            subtasks: true,
+                            lead: true,
+                            collaborators: true,
+                            project: true,
+                            module: { include: { project: true } }
+                        }
                     }
                 }
             },
             tickets: {
                 where: { moduleId: null },
                 orderBy: { createdAt: 'desc' },
-                include: { subtasks: true }
+                include: { 
+                    subtasks: { orderBy: { order: 'asc' } },
+                    lead: true,
+                    collaborators: true,
+                    project: true,
+                    module: { include: { project: true } }
+                }
             }
         }
     });
@@ -40,10 +52,14 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         return <div className="p-8 text-center text-red-500 font-black uppercase tracking-widest border-4 border-dashed border-red-500/20 m-8">Proyecto no encontrado.</div>
     }
 
+    const allUsers = await prisma.user.findMany({
+        select: { id: true, username: true, email: true }
+    });
+
     const documents = await getDocuments(project.id);
 
     return (
-        <div className="flex flex-col gap-6 p-4 md:p-8 max-w-[1600px] mx-auto min-h-screen bg-background/50">
+        <div className="flex flex-col gap-6 p-4 lg:p-2 max-w-full min-h-screen bg-background/50">
             {/* Header Premium Industrial */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b-4 border-foreground pb-12 pt-8">
                 <div className="space-y-4">
@@ -56,7 +72,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                                 <Badge variant="outline" className="rounded-none border-primary/40 text-primary text-[9px] font-black uppercase tracking-widest px-3 h-5">
                                     Misión Activa
                                 </Badge>
-                                <span className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-tight">Estatus: {project.status}</span>
+                                <span className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-tight">Estado: {project.status}</span>
                             </div>
                             <h1 className="text-5xl font-black tracking-tighter uppercase leading-none">{project.name}</h1>
                         </div>
@@ -66,10 +82,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                     </p>
                 </div>
                 <div className="flex items-center gap-4">
-                     <CreateModuleDialog projectId={project.id} availableTickets={project.tickets} />
-                     <Button className="rounded-none bg-foreground text-background hover:bg-foreground/90 font-black uppercase text-[10px] tracking-[0.2em] px-8 h-12 shadow-[8px_8px_0px_rgba(0,0,0,0.1)] transition-all active:translate-x-1 active:translate-y-1 active:shadow-none">
-                        Configurar Misión
-                     </Button>
+                     <EditProjectDialog project={project} />
                 </div>
             </div>
 
@@ -84,7 +97,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 </TabsList>
                 
                 <TabsContent value="overview">
-                    <ProjectStructure project={project} session={session} />
+                    <ProjectStructure project={project} session={session} allUsers={allUsers} />
                 </TabsContent>
 
                 <TabsContent value="planning" className="animate-in fade-in slide-in-from-top-4 duration-500">

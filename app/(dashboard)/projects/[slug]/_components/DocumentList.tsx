@@ -48,41 +48,58 @@ export function DocumentList({ projectId, documents, selectedId, onSelect }: Doc
   };
 
   return (
-    <div className="flex flex-col gap-2 w-full max-w-[250px] border-r pr-4 h-[calc(100vh-250px)]">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="font-semibold text-sm">Documentos</h3>
-        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleCreate} disabled={isPending}>
-          <Plus className="h-4 w-4" />
-        </Button>
-      </div>
-      <div className="flex flex-col gap-1 overflow-y-auto">
-        {documents.map((doc) => (
-          <div
-            key={doc.id}
-            onClick={() => onSelect(doc.id)}
-            className={cn(
-              "group flex items-center justify-between p-2 rounded-md cursor-pointer text-sm transition-colors",
-              selectedId === doc.id ? "bg-primary text-primary-foreground" : "hover:bg-muted"
-            )}
-          >
-            <div className="flex items-center gap-2 truncate">
-              <FileText className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate">{doc.name}</span>
-            </div>
-            <button
-              onClick={(e) => handleDelete(e, doc.id)}
-              className={cn(
-                "opacity-0 group-hover:opacity-100 p-1 hover:text-red-500 transition-opacity",
-                selectedId === doc.id && "text-primary-foreground hover:text-red-200"
-              )}
-            >
-              <Trash2 className="h-3 w-3" />
-            </button>
+    <div className="space-y-6 animate-in fade-in duration-700">
+      <div className="flex items-center justify-between px-1">
+          <div className="flex items-center gap-2">
+               <div className="size-2 bg-primary/30 rounded-full" />
+               <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">Documentos Nexus</h2>
           </div>
-        ))}
-        {documents.length === 0 && (
-          <p className="text-xs text-muted-foreground italic p-2 text-center">Sin documentos.</p>
-        )}
+          <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-primary/10 hover:text-primary rounded-none" onClick={handleCreate} disabled={isPending}>
+            <Plus className="h-4 w-4" />
+          </Button>
+      </div>
+
+      <div className={cn(
+          "rounded-none border-2 border-primary/10 bg-background/50 backdrop-blur-sm overflow-hidden flex flex-col h-[750px] shadow-2xl relative",
+      )}>
+          <div className="p-4 border-b-2 border-foreground/5 bg-muted/20">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">Archivos de Planificación</p>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-3 space-y-2">
+            {documents.map((doc) => (
+              <div
+                key={doc.id}
+                onClick={() => onSelect(doc.id)}
+                className={cn(
+                  "group flex items-center justify-between p-4 border-2 transition-all cursor-pointer relative overflow-hidden",
+                  selectedId === doc.id 
+                    ? "bg-foreground text-background border-foreground shadow-lg scale-[1.02] z-10" 
+                    : "bg-background border-foreground/5 hover:border-primary/40 text-muted-foreground/80 hover:text-foreground"
+                )}
+              >
+                <div className="flex items-center gap-3 truncate">
+                  <FileText className={cn("size-4 flex-shrink-0", selectedId === doc.id ? "text-background" : "text-primary/60")} />
+                  <span className="truncate font-black uppercase text-[12px] tracking-tight">{doc.name}</span>
+                </div>
+                <button
+                  onClick={(e) => handleDelete(e, doc.id)}
+                  className={cn(
+                    "opacity-0 group-hover:opacity-100 p-2 hover:bg-red-500 hover:text-white transition-all rounded-none shrink-0",
+                    selectedId === doc.id && "bg-background/10 hover:bg-background/20 text-background"
+                  )}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))}
+            {documents.length === 0 && (
+              <div className="py-24 flex flex-col items-center justify-center text-center gap-4 opacity-10 border-4 border-dashed border-foreground/5 font-black uppercase text-[10px] tracking-widest">
+                  <FileText className="size-12" />
+                  <p>Sin Documentos</p>
+              </div>
+            )}
+          </div>
       </div>
     </div>
   );

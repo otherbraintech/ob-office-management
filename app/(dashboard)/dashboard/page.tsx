@@ -71,8 +71,8 @@ export default async function DashboardOverview() {
     });
   }
 
-  const totalWeeklyMinutes = weeklyWorkSessions.reduce((acc, session) => acc + (session.duration || 0), 0);
-  const totalWeeklyHours = (totalWeeklyMinutes / 60).toFixed(1);
+  const totalWeeklySeconds = weeklyWorkSessions.reduce((acc, session) => acc + (session.duration || 0), 0);
+  const totalWeeklyHours = (totalWeeklySeconds / 3600).toFixed(1);
   const totalMonthlyExpenses = monthlyExpenses._sum.amount || 0;
 
   const myProjects = await prisma.project.findMany({

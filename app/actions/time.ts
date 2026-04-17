@@ -133,6 +133,18 @@ export async function pauseActiveTicket() {
                 }
             });
         }
+
+        // Handle subtask if present
+        if (activeSession.subtaskId) {
+            await prisma.subtask.update({
+                where: { id: activeSession.subtaskId },
+                data: {
+                    realTime: { increment: sessionDuration },
+                    isActive: false,
+                    lastStartedAt: null
+                }
+            });
+        }
         
         revalidatePath("/");
         return activeSession;
@@ -236,4 +248,48 @@ export async function completeSubtask(subtaskId: string, realTimeSeconds: number
 
     revalidatePath("/");
     return { success: true, allDone };
+}
+
+export async function pauseShift() {
+    const session = await getSession();
+    if (!session) throw new Error("Unauthorized");
+
+    const activeShift = await prisma.shift.findFirst({
+        where: { userId: session.id, endTime: null }
+    });
+
+    if (activeShift) {
+        // First pause any active ticket/subtask
+        await pauseActiveTicket();
+
+        // Mark shift as paused
+        await prisma.shift.update({
+            where: { id: activeShift.id },
+            data: { isPaused: true }
+        });
+
+        revalidatePath("/");
+        return { success: true };
+    }
+    return { error: "No hay turno activo para pausar" };
+}
+
+export async function resumeShift() {
+    const session = await getSession();
+    if (!session) throw new Error("Unauthorized");
+
+    const activeShift = await prisma.shift.findFirst({
+        where: { userId: session.id, endTime: null }
+    });
+
+    if (activeShift) {
+        await prisma.shift.update({
+            where: { id: activeShift.id },
+            data: { isPaused: false }
+        });
+
+        revalidatePath("/");
+        return { success: true };
+    }
+    return { error: "No hay turno pausado para reanudar" };
 }

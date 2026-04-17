@@ -85,7 +85,7 @@ const navItems = [
       roles: ["CEO", "DEVELOPER", "INTERN"]
     },
     {
-      title: "Directorio de Equipo",
+      title: "Equipo",
       url: "/team",
       icon: <Users />,
       roles: ["CEO", "DEVELOPER", "INTERN"]

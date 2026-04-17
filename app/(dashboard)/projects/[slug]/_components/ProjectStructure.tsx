@@ -33,9 +33,16 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { TicketCard } from "@/components/tickets/ticket-card";
 import { Eraser } from "lucide-react";
 
-export function ProjectStructure({ project, session }: { project: any, session: any }) {
+export function ProjectStructure({ project, session, allUsers }: { project: any, session: any, allUsers: any[] }) {
     const [isPending, startTransition] = useTransition();
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState("");
@@ -161,7 +168,7 @@ export function ProjectStructure({ project, session }: { project: any, session: 
                                  "size-2 animate-pulse rounded-full transition-all duration-500",
                                  dropTargetId === 'backlog' ? "bg-primary scale-[2] shadow-[0_0_10px_rgba(0,0,0,0.2)]" : "bg-primary/30"
                              )} />
-                             <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">Backlog Maestro</h2>
+                             <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">Tickets del Proyecto</h2>
                         </div>
                         <Badge variant="outline" className="rounded-none border-primary/20 text-[9px] font-black text-primary">
                             {optimisticProject.tickets.length}
@@ -197,70 +204,77 @@ export function ProjectStructure({ project, session }: { project: any, session: 
                         <ScrollArea className="flex-1 z-10">
                             <div className="p-3 space-y-3">
                                 {filteredBacklog.map((ticket: any) => (
-                                    <div 
-                                        key={ticket.id}
-                                        draggable
-                                        onDragStart={(e) => handleDragStart(e, ticket.id)}
-                                        onDragEnd={handleDragEnd}
-                                        className={cn(
-                                            "group/ticket p-4 bg-background border-2 border-foreground/5 hover:border-primary/40 transition-all cursor-grab active:cursor-grabbing relative overflow-hidden animate-in fade-in zoom-in-95 duration-500",
-                                            draggedTicketId === ticket.id && "opacity-20 scale-95 grayscale"
-                                        )}
-                                    >
-                                        <div className="space-y-3">
-                                            <div className="flex justify-between items-start gap-2">
-                                                <Link href={`/tickets/${ticket.id}`} className="font-extrabold text-[13px] uppercase tracking-tighter leading-tight hover:text-primary transition-colors line-clamp-2 pr-2">
-                                                    {ticket.title}
-                                                </Link>
-                                                <Badge variant="outline" className={cn(
-                                                    "rounded-none text-[8px] font-black shrink-0 px-1 border-2",
-                                                    ticket.priority === 'URGENT' ? 'border-red-500/50 text-red-500 bg-red-500/5' : 'border-foreground/5 text-muted-foreground/40'
-                                                )}>
-                                                    {ticket.priority}
-                                                </Badge>
-                                            </div>
-                                            
-                                            <div className="flex items-center justify-between pt-3 border-t border-foreground/5">
-                                                <div className="flex items-center gap-2 text-muted-foreground/40 text-[9px] font-black uppercase tracking-widest">
-                                                    <Clock className="size-3" />
-                                                    {new Date(ticket.createdAt).toLocaleDateString()}
+                                    <Dialog key={ticket.id}>
+                                        <div 
+                                            draggable
+                                            onDragStart={(e) => handleDragStart(e, ticket.id)}
+                                            onDragEnd={handleDragEnd}
+                                            className={cn(
+                                                "group/ticket p-4 bg-background border-2 border-foreground/5 hover:border-primary/40 transition-all cursor-grab active:cursor-grabbing relative overflow-hidden animate-in fade-in zoom-in-95 duration-500",
+                                                draggedTicketId === ticket.id && "opacity-20 scale-95 grayscale"
+                                            )}
+                                        >
+                                            <div className="space-y-3">
+                                                <div className="flex justify-between items-start gap-2">
+                                                    <DialogTrigger asChild>
+                                                        <button className="text-left font-extrabold text-[13px] uppercase tracking-tighter leading-tight hover:text-primary transition-colors line-clamp-2 pr-2">
+                                                            {ticket.title}
+                                                        </button>
+                                                    </DialogTrigger>
+                                                    <Badge variant="outline" className={cn(
+                                                        "rounded-none text-[8px] font-black shrink-0 px-1 border-2",
+                                                        ticket.priority === 'URGENT' ? 'border-red-500/50 text-red-500 bg-red-500/5' : 'border-foreground/5 text-muted-foreground/40'
+                                                    )}>
+                                                        {ticket.priority}
+                                                    </Badge>
                                                 </div>
-                                                <div className="flex items-center gap-1 opacity-0 group-hover/ticket:opacity-100 transition-all">
-                                                    <AssignToModuleButton 
-                                                        ticketId={ticket.id} 
-                                                        modules={optimisticProject.modules.map((m: any) => ({ id: m.id, name: m.name }))} 
-                                                    />
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button 
-                                                                variant="ghost" 
-                                                                size="icon" 
-                                                                className="size-8 rounded-none hover:bg-red-500/10 hover:text-red-500" 
-                                                                onClick={(e) => {
-                                                                    e.preventDefault();
-                                                                    handleUnlink(ticket.id);
-                                                                }}
-                                                                disabled={isPending}
-                                                            >
-                                                                <Eraser className="size-3.5" />
+                                                
+                                                <div className="flex items-center justify-between pt-3 border-t border-foreground/5">
+                                                    <div className="flex items-center gap-2 text-muted-foreground/40 text-[9px] font-black uppercase tracking-widest">
+                                                        <Clock className="size-3" />
+                                                        {new Date(ticket.createdAt).toLocaleDateString()}
+                                                    </div>
+                                                    <div className="flex items-center gap-1 opacity-0 group-hover/ticket:opacity-100 transition-all">
+                                                        <AssignToModuleButton 
+                                                            ticketId={ticket.id} 
+                                                            modules={optimisticProject.modules.map((m: any) => ({ id: m.id, name: m.name }))} 
+                                                        />
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <Button 
+                                                                    variant="ghost" 
+                                                                    size="icon" 
+                                                                    className="size-8 rounded-none hover:bg-red-500/10 hover:text-red-500" 
+                                                                    onClick={(e) => {
+                                                                        e.preventDefault();
+                                                                        handleUnlink(ticket.id);
+                                                                    }}
+                                                                    disabled={isPending}
+                                                                >
+                                                                    <Eraser className="size-3.5" />
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent className="rounded-none font-bold uppercase text-[9px] tracking-widest bg-red-500 text-white">Liberar de Proyecto</TooltipContent>
+                                                        </Tooltip>
+                                                        
+                                                        <DialogTrigger asChild>
+                                                            <Button variant="ghost" size="icon" className="size-8 rounded-none hover:bg-primary/10 hover:text-primary">
+                                                                <ArrowUpRight className="size-3.5" />
                                                             </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent className="rounded-none font-bold uppercase text-[9px] tracking-widest bg-red-500 text-white">Liberar de Proyecto</TooltipContent>
-                                                    </Tooltip>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button variant="ghost" size="icon" className="size-8 rounded-none hover:bg-primary/10 hover:text-primary" asChild>
-                                                                <Link href={`/tickets/${ticket.id}`}>
-                                                                    <ArrowUpRight className="size-3.5" />
-                                                                </Link>
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent className="rounded-none font-bold uppercase text-[9px] tracking-widest">Abrir Requerimiento</TooltipContent>
-                                                    </Tooltip>
+                                                        </DialogTrigger>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+                                        <DialogContent className="max-w-[95vw] md:max-w-5xl p-0 overflow-y-auto max-h-[90vh] border-2 border-primary/20 rounded-none bg-background custom-scrollbar">
+                                            <DialogTitle className="sr-only">Detalles del Requerimiento</DialogTitle>
+                                            <TicketCard 
+                                                ticket={ticket} 
+                                                allUsers={allUsers} 
+                                                currentUserId={session.id} 
+                                            />
+                                        </DialogContent>
+                                    </Dialog>
                                 ))}
 
                                 {filteredBacklog.length === 0 && (
@@ -289,7 +303,7 @@ export function ProjectStructure({ project, session }: { project: any, session: 
                         )}
                     </div>
 
-                    <div className="grid gap-6 md:grid-cols-2 2xl:grid-cols-3">
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-5">
                         {optimisticProject.modules.map((mod: any) => (
                             <div 
                                 key={mod.id}
@@ -334,33 +348,39 @@ export function ProjectStructure({ project, session }: { project: any, session: 
                                         <ScrollArea className="h-full pr-2">
                                             <div className="p-1 space-y-2">
                                                 {mod.tickets.map((t: any) => (
-                                                    <div 
-                                                        key={t.id}
-                                                        draggable
-                                                        onDragStart={(e) => handleDragStart(e, t.id)}
-                                                        onDragEnd={handleDragEnd}
-                                                        className="block group/item"
-                                                    >
-                                                        <Link 
-                                                            href={`/tickets/${t.id}`}
-                                                            className={cn(
-                                                                "flex items-center justify-between p-3 bg-muted/5 hover:bg-primary/5 border-2 border-transparent hover:border-primary/20 transition-all overflow-hidden animate-in slide-in-from-right-4 duration-500 cursor-grab active:cursor-grabbing",
-                                                                draggedTicketId === t.id && "opacity-10 scale-90 grayscale"
-                                                            )}
-                                                        >
-                                                            <div className="flex items-center gap-3 min-w-0">
-                                                                <div className={cn(
-                                                                    "size-2 shrink-0 rounded-none transform rotate-45 border border-foreground/10 transition-all duration-700",
-                                                                    t.status === 'DONE' ? 'bg-green-500 scale-110 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 
-                                                                    t.status === 'IN_PROGRESS' ? 'bg-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.5)] animate-pulse' : 'bg-primary/20'
-                                                                )} />
-                                                                <span className="text-[11px] font-extrabold uppercase tracking-tight truncate opacity-60 group-hover/item:opacity-100 transition-opacity">
-                                                                    {t.title}
-                                                                </span>
+                                                    <Dialog key={t.id}>
+                                                        <DialogTrigger asChild>
+                                                            <div 
+                                                                draggable
+                                                                onDragStart={(e) => handleDragStart(e, t.id)}
+                                                                onDragEnd={handleDragEnd}
+                                                                className={cn(
+                                                                    "flex items-center justify-between p-3 bg-muted/5 hover:bg-primary/5 border-2 border-transparent hover:border-primary/20 transition-all overflow-hidden animate-in slide-in-from-right-4 duration-500 cursor-grab active:cursor-grabbing group/item",
+                                                                    draggedTicketId === t.id && "opacity-10 scale-90 grayscale"
+                                                                )}
+                                                            >
+                                                                <div className="flex items-center gap-3 min-w-0">
+                                                                    <div className={cn(
+                                                                        "size-2 shrink-0 rounded-none transform rotate-45 border border-foreground/10 transition-all duration-700",
+                                                                        t.status === 'DONE' ? 'bg-green-500 scale-110 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 
+                                                                        t.status === 'IN_PROGRESS' ? 'bg-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.5)] animate-pulse' : 'bg-primary/20'
+                                                                    )} />
+                                                                    <span className="text-[11px] font-extrabold uppercase tracking-tight truncate opacity-60 group-hover/item:opacity-100 transition-opacity">
+                                                                        {t.title}
+                                                                    </span>
+                                                                </div>
+                                                                <ChevronRight className="size-3 text-primary opacity-0 group-hover/item:opacity-40 transition-all shrink-0" />
                                                             </div>
-                                                            <ChevronRight className="size-3 text-primary opacity-0 group-hover/item:opacity-40 transition-all shrink-0" />
-                                                        </Link>
-                                                    </div>
+                                                        </DialogTrigger>
+                                                        <DialogContent className="max-w-[95vw] md:max-w-5xl p-0 overflow-y-auto max-h-[90vh] border-2 border-primary/20 rounded-none bg-background custom-scrollbar">
+                                                            <DialogTitle className="sr-only">Detalles del Requerimiento</DialogTitle>
+                                                            <TicketCard 
+                                                                ticket={t} 
+                                                                allUsers={allUsers} 
+                                                                currentUserId={session.id} 
+                                                            />
+                                                        </DialogContent>
+                                                    </Dialog>
                                                 ))}
                                                 {mod.tickets.length === 0 && (
                                                     <div className="flex flex-col items-center justify-center py-20 opacity-[0.05] border-4 border-dashed border-foreground/10 font-black uppercase text-[10px] tracking-widest gap-2">

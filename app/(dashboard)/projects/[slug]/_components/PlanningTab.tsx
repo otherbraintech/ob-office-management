@@ -20,7 +20,7 @@ export function PlanningTab({ projectId, projectName, initialDocuments }: Planni
   const selectedDocument = initialDocuments.find((d) => d.id === selectedId);
 
   return (
-    <div className="flex gap-6">
+    <div className="grid gap-8 lg:grid-cols-[380px_1fr] animate-in fade-in duration-700">
       <DocumentList
         projectId={projectId}
         documents={initialDocuments}
@@ -28,17 +28,19 @@ export function PlanningTab({ projectId, projectName, initialDocuments }: Planni
         onSelect={setSelectedId}
       />
       
-      {selectedDocument ? (
-        <DocumentEditor document={selectedDocument} projectName={projectName} />
-      ) : (
-        <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-12 text-center bg-muted/10">
-          <Info className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
-          <h3 className="text-lg font-medium">Selecciona un documento</h3>
-          <p className="text-muted-foreground max-w-sm">
-            Crea o selecciona un archivo de planificación para comenzar a estructurar tu proyecto con ayuda de la IA.
-          </p>
-        </div>
-      )}
+      <div className="min-w-0">
+        {selectedDocument ? (
+          <DocumentEditor document={selectedDocument} projectName={projectName} />
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center border-4 border-dashed rounded-none p-12 text-center bg-muted/10 h-[750px] border-foreground/5">
+            <Info className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
+            <h3 className="text-xl font-black uppercase tracking-tight">Selecciona un documento</h3>
+            <p className="text-muted-foreground text-[11px] font-bold uppercase tracking-widest max-w-sm mt-4">
+              Crea o selecciona un archivo de planificación para comenzar a estructurar tu proyecto con ayuda de la IA.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

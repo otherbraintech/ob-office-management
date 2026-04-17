@@ -40,7 +40,25 @@ export default async function ProfilePage() {
     const allTicketsMap = new Map();
     user.ledTickets.forEach(t => allTicketsMap.set(t.id, t));
     user.sharedTickets.forEach(t => allTicketsMap.set(t.id, t));
-    const allTickets = Array.from(allTicketsMap.values()).sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+    const allTickets = Array.from(allTicketsMap.values())
+        .map(t => ({
+            id: t.id,
+            title: t.title,
+            status: t.status,
+            estimatedTime: t.estimatedTime,
+            realTime: t.realTime,
+            updatedAt: t.updatedAt,
+            project: t.project ? { name: t.project.name } : null,
+            creator: t.creator ? { name: t.creator.name } : null,
+            subtasks: (t.subtasks || []).map((st: any) => ({
+                id: st.id,
+                title: st.title,
+                status: st.status,
+                estimatedTime: st.estimatedTime,
+                realTime: st.realTime
+            }))
+        }))
+        .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
 
     return (
         <div className="p-8 max-w-7xl mx-auto space-y-12">
@@ -51,7 +69,14 @@ export default async function ProfilePage() {
                 </div>
 
                 <div className="bg-background border-2 border-foreground/5 p-8">
-                    <ProfileForm user={user} />
+                    <ProfileForm user={{
+                        id: user.id,
+                        name: user.name,
+                        username: user.username,
+                        image: user.image,
+                        role: user.role,
+                        email: user.email
+                    }} />
                 </div>
             </div>
 

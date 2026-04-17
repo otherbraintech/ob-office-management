@@ -171,6 +171,7 @@ model Shift {
   id        String    @id @default(cuid())
   startTime DateTime  @default(now())
   endTime   DateTime?
+  isPaused  Boolean   @default(false)
   duration  Int       @default(0) // En segundos
 
   userId String

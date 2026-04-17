@@ -36,22 +36,25 @@ export default function HelpPage() {
               </marker>
             </defs>
             {/* LÍNEA RAÍZ -> PROYECTO & INDEPENDIENTE */}
-            <path d="M 480 50 L 480 80" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" />
-            <path d="M 480 80 L 320 80 L 320 110" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" markerEnd="url(#arrowhead)" />
-            <path d="M 480 80 L 640 80 L 640 110" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" markerEnd="url(#arrowhead)" />
+            <path d="M 572 50 L 572 80" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" />
+            <path d="M 572 80 L 415 80 L 415 110" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" markerEnd="url(#arrowhead)" />
+            <path d="M 572 80 L 730 80 L 730 110" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" markerEnd="url(#arrowhead)" />
             
-            {/* LÍNEAS PROYECTO -> MÓDULO */}
-            <path d="M 320 160 L 320 210" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" markerEnd="url(#arrowhead)" />
+            {/* LÍNEAS PROYECTO -> MÓDULO & TICKET DIRECTO */}
+            <path d="M 415 160 L 415 185" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" />
+            <path d="M 415 185 L 280 185 L 280 210" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" markerEnd="url(#arrowhead)" />
+            <path d="M 415 185 L 550 185 L 550 310" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" markerEnd="url(#arrowhead)" />
             
             {/* LÍNEAS MÓDULO -> TICKETS */}
-            <path d="M 320 260 L 320 285" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" />
-            <path d="M 320 285 L 190 285 L 190 310" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" markerEnd="url(#arrowhead)" />
-            <path d="M 320 285 L 450 285 L 450 310" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" markerEnd="url(#arrowhead)" />
+            <path d="M 280 260 L 280 285" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" />
+            <path d="M 280 285 L 190 285 L 190 310" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" markerEnd="url(#arrowhead)" />
+            <path d="M 280 285 L 370 285 L 370 310" fill="none" className="stroke-zinc-300 dark:stroke-zinc-700" strokeWidth="1" markerEnd="url(#arrowhead)" />
 
             {/* LÍNEAS TICKETS -> SUBTAREAS */}
             <path d="M 190 360 L 190 410" fill="none" className="stroke-zinc-400 dark:stroke-zinc-600" strokeWidth="1" strokeDasharray="4" markerEnd="url(#arrowhead)" />
-            <path d="M 450 360 L 450 410" fill="none" className="stroke-zinc-400 dark:stroke-zinc-600" strokeWidth="1" strokeDasharray="4" markerEnd="url(#arrowhead)" />
-            <path d="M 640 160 L 640 410" fill="none" className="stroke-zinc-400 dark:stroke-zinc-600" strokeWidth="1" strokeDasharray="4" markerEnd="url(#arrowhead)" />
+            <path d="M 370 360 L 370 410" fill="none" className="stroke-zinc-400 dark:stroke-zinc-600" strokeWidth="1" strokeDasharray="4" markerEnd="url(#arrowhead)" />
+            <path d="M 550 360 L 550 410" fill="none" className="stroke-zinc-400 dark:stroke-zinc-600" strokeWidth="1" strokeDasharray="4" markerEnd="url(#arrowhead)" />
+            <path d="M 730 160 L 730 410" fill="none" className="stroke-zinc-400 dark:stroke-zinc-600" strokeWidth="1" strokeDasharray="4" markerEnd="url(#arrowhead)" />
           </svg>
 
           {/* NODOS */}
@@ -64,20 +67,20 @@ export default function HelpPage() {
           <div className="absolute left-0 text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-30" style={{top: '410px'}}>Subtarea</div>
 
           {/* Nivel 1: ROOT */}
-          <div className="absolute" style={{ left: '395px', top: '10px' }}>
+          <div className="absolute" style={{ left: '487px', top: '10px' }}>
             <DiagramNode icon={<Sparkles className="size-4" />} title="OB-Workspace" id="ROOT" />
           </div>
           
           {/* Nivel 2: ORGANIZACIÓN */}
-          <div className="absolute" style={{ left: '235px', top: '110px' }}>
+          <div className="absolute" style={{ left: '330px', top: '110px' }}>
             <DiagramNode icon={<Briefcase className="size-4" />} title="Proyecto Operativo" id="P1" />
           </div>
-          <div className="absolute" style={{ left: '555px', top: '110px' }}>
-            <DiagramNode icon={<Ticket className="size-4" />} title="Ticket Suelto" id="T-IND" hasAI />
+          <div className="absolute" style={{ left: '645px', top: '110px' }}>
+            <DiagramNode icon={<Ticket className="size-4" />} title="Ticket Independiente" id="T-IND" hasAI />
           </div>
           
           {/* Nivel 3: MÓDULO */}
-          <div className="absolute" style={{ left: '235px', top: '210px' }}>
+          <div className="absolute" style={{ left: '195px', top: '210px' }}>
             <DiagramNode icon={<Box className="size-4" />} title="Módulo Técnico" id="M1" />
           </div>
           
@@ -85,18 +88,24 @@ export default function HelpPage() {
           <div className="absolute" style={{ left: '105px', top: '310px' }}>
             <DiagramNode icon={<Ticket className="size-4" />} title="Ticket de Módulo A" id="T1" hasAI />
           </div>
-          <div className="absolute" style={{ left: '365px', top: '310px' }}>
+          <div className="absolute" style={{ left: '285px', top: '310px' }}>
             <DiagramNode icon={<Ticket className="size-4" />} title="Ticket de Módulo B" id="T2" hasAI />
+          </div>
+          <div className="absolute" style={{ left: '465px', top: '310px' }}>
+            <DiagramNode icon={<Ticket className="size-4" />} title="Ticket Directo" id="T-DIR" hasAI />
           </div>
           
           {/* Nivel 5: SUBTAREA */}
           <div className="absolute" style={{ left: '105px', top: '410px' }}>
             <DiagramNode icon={<ListTodo className="size-4" />} title="Task Técnica 1" id="S1" isSubtask />
           </div>
-          <div className="absolute" style={{ left: '365px', top: '410px' }}>
+          <div className="absolute" style={{ left: '285px', top: '410px' }}>
             <DiagramNode icon={<ListTodo className="size-4" />} title="Task Técnica 2" id="S2" isSubtask />
           </div>
-          <div className="absolute" style={{ left: '555px', top: '410px' }}>
+          <div className="absolute" style={{ left: '465px', top: '410px' }}>
+            <DiagramNode icon={<ListTodo className="size-4" />} title="Task Directa" id="S1.1" isSubtask />
+          </div>
+          <div className="absolute" style={{ left: '645px', top: '410px' }}>
             <DiagramNode icon={<ListTodo className="size-4" />} title="Task Independiente" id="S3" isSubtask />
           </div>
 

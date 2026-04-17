@@ -35,15 +35,15 @@ export default async function TeamsPage() {
                         <div className="space-y-1">
                             <div className="flex items-center gap-2">
                                 <Badge variant="outline" className="rounded-none border-primary/40 text-primary text-[10px] font-black uppercase tracking-[0.2em] px-3 h-5">
-                                    Operational Registry
+                                    REGISTRO OPERATIVO
                                 </Badge>
-                                <span className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-tight">Active Nodes: {team.length}</span>
+                                <span className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-tight">Cuentas Activas: {team.length}</span>
                             </div>
-                            <h1 className="text-5xl font-black tracking-tighter uppercase leading-none">Directorio de Equipo</h1>
+                            <h1 className="text-5xl font-black tracking-tighter uppercase leading-none">Other Brain</h1>
                         </div>
                     </div>
                     <p className="text-sm text-muted-foreground font-bold max-w-2xl leading-relaxed uppercase tracking-tight opacity-70">
-                        Visualización de rendimiento individual y métricas de despliegue para el equipo de OtherBrain Universe.
+                        CEO y Personal Operativo de la empresa.
                     </p>
                 </div>
                 
@@ -51,7 +51,7 @@ export default async function TeamsPage() {
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
                     <input 
                         className="w-full bg-muted/20 border-2 border-foreground/5 h-12 pl-12 pr-4 text-[10px] font-black uppercase tracking-widest focus:border-primary focus:bg-background outline-none transition-all rounded-none"
-                        placeholder="Filtrar operador..."
+                        placeholder="Buscar por nombre..."
                     />
                 </div>
             </div>
@@ -80,7 +80,7 @@ export default async function TeamsPage() {
                                     </Badge>
                                     <div className="flex items-center gap-1.5 pt-1">
                                          <div className="size-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
-                                         <span className="text-[8px] font-bold uppercase text-muted-foreground opacity-60">Status: Active</span>
+                                         <span className="text-[8px] font-bold uppercase text-muted-foreground opacity-60">Estado: Activo</span>
                                     </div>
                                 </div>
                             </div>
@@ -102,37 +102,37 @@ export default async function TeamsPage() {
                                 <div className="p-3 bg-muted/30 border-2 border-foreground/5 space-y-1 group-hover:bg-primary/5 group-hover:border-primary/10 transition-all">
                                     <div className="flex items-center gap-2 text-muted-foreground/60">
                                         <Briefcase className="size-3" />
-                                        <span className="text-[8px] font-black uppercase tracking-widest">Involucrado</span>
+                                        <span className="text-[8px] font-black uppercase tracking-widest">Proyectos</span>
                                     </div>
-                                    <p className="text-lg font-black tracking-tight">{user.stats.projectsInvolved} PROY</p>
+                                    <p className="text-lg font-black tracking-tight">{user.stats.projectsInvolved} EN USO</p>
                                 </div>
                                 <div className="p-3 bg-muted/30 border-2 border-foreground/5 space-y-1 group-hover:bg-primary/5 group-hover:border-primary/10 transition-all">
                                     <div className="flex items-center gap-2 text-muted-foreground/60">
                                         <TrendingUp className="size-3" />
-                                        <span className="text-[8px] font-black uppercase tracking-widest">Tickets</span>
+                                        <span className="text-[8px] font-black uppercase tracking-widest">Tareas</span>
                                     </div>
                                     <p className="text-lg font-black tracking-tight">{user.stats.ticketsTaken} TOTAL</p>
                                 </div>
                                 <div className="p-3 bg-muted/30 border-2 border-foreground/5 space-y-1 group-hover:bg-primary/5 group-hover:border-primary/10 transition-all">
                                     <div className="flex items-center gap-2 text-muted-foreground/60">
                                         <CheckCircle2 className="size-3 text-green-500" />
-                                        <span className="text-[8px] font-black uppercase tracking-widest">Done</span>
+                                        <span className="text-[8px] font-black uppercase tracking-widest">Completas</span>
                                     </div>
-                                    <p className="text-lg font-black tracking-tight text-green-600">{user.stats.ticketsFinished} OK</p>
+                                    <p className="text-lg font-black tracking-tight text-green-600">{user.stats.ticketsFinished} LISTO</p>
                                 </div>
                                 <div className="p-3 bg-muted/30 border-2 border-foreground/5 space-y-1 group-hover:bg-primary/5 group-hover:border-primary/10 transition-all">
                                     <div className="flex items-center gap-2 text-muted-foreground/60">
                                         <Clock className="size-3 text-primary" />
                                         <span className="text-[8px] font-black uppercase tracking-widest">Tiempo</span>
                                     </div>
-                                    <p className="text-lg font-black tracking-tight">{user.stats.activeHours} HRS</p>
+                                    <p className="text-lg font-black tracking-tight">{user.stats.activeHours} HORAS</p>
                                 </div>
                             </div>
 
                             {/* Efficiency Bar */}
                             <div className="space-y-2">
                                 <div className="flex justify-between items-end">
-                                    <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">Eficiencia de Despliegue</span>
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">Eficiencia de Trabajo</span>
                                     <span className="text-[10px] font-black text-primary">
                                         {user.stats.ticketsTaken > 0 
                                             ? Math.round((user.stats.ticketsFinished / user.stats.ticketsTaken) * 100) 
@@ -151,10 +151,6 @@ export default async function TeamsPage() {
                                 </div>
                             </div>
 
-                            <Button variant="outline" className="w-full rounded-none border-2 border-foreground/5 text-[9px] font-black uppercase tracking-[0.2em] h-10 hover:bg-foreground hover:text-background transition-all group-hover:border-primary/20">
-                                Ver Registro Detallado
-                                <ChevronRight className="size-3 ml-2 group-hover:translate-x-1 transition-transform" />
-                            </Button>
                         </CardContent>
                     </Card>
                 ))}
@@ -165,9 +161,9 @@ export default async function TeamsPage() {
                         <Plus className="size-10 text-muted-foreground/40 group-hover:text-primary transition-colors" />
                     </div>
                     <div className="space-y-2">
-                        <p className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Anexar Nuevo Operador</p>
+                        <p className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Invitar Nuevo Miembro</p>
                         <p className="text-[9px] font-bold uppercase tracking-tighter text-muted-foreground/30 px-6 leading-relaxed">
-                            Añade un nuevo nodo de ejecución a la arquitectura de OtherBrain.
+                            Agrega un nuevo integrante al equipo operativo de OtherBrain.
                         </p>
                     </div>
                 </div>

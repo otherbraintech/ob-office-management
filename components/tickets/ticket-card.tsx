@@ -557,7 +557,7 @@ export function TicketCard({
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
                                             <Button variant="ghost" size="sm" className="h-8 text-[10px] font-bold uppercase tracking-widest hover:bg-primary/5 hover:text-primary transition-all cursor-pointer">
-                                                <Sparkles className="size-3 mr-2" /> Optimizar IA
+                                                <Sparkles className="size-3 mr-2" /> Recrear Subtareas
                                             </Button>
                                         </AlertDialogTrigger>
                                         <AlertDialogContent className="rounded-none border-4 border-foreground/5">
@@ -568,8 +568,8 @@ export function TicketCard({
                                                 </AlertDialogDescription>
                                             </AlertDialogHeader>
                                             <AlertDialogFooter className="mt-8">
-                                                <AlertDialogCancel className="rounded-none font-bold uppercase text-[10px]">Cancelar</AlertDialogCancel>
-                                                <AlertDialogAction onClick={handleAIRegenerate} className="rounded-none font-black uppercase text-[10px] px-8 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl shadow-primary/20">
+                                                <AlertDialogCancel className="rounded-none font-bold uppercase text-[10px] cursor-pointer">Cancelar</AlertDialogCancel>
+                                                <AlertDialogAction onClick={handleAIRegenerate} className="rounded-none font-black uppercase text-[10px] px-8 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl shadow-primary/20 cursor-pointer">
                                                     Continuar
                                                 </AlertDialogAction>
                                             </AlertDialogFooter>
@@ -648,9 +648,9 @@ export function TicketCard({
                                     >
                                         {/* Drag/Reorder Handles (Hidden if locked) */}
                                         {!isLocked && (
-                                            <div className="flex flex-col opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button onClick={() => handleReorderLocal(st.id, 'UP')} className="p-1 hover:text-primary transition-colors"><ArrowUp className="size-3" /></button>
-                                                <button onClick={() => handleReorderLocal(st.id, 'DOWN')} className="p-1 hover:text-primary transition-colors"><ArrowDown className="size-3" /></button>
+                                            <div className="flex flex-col opacity-0 group-hover:opacity-100 transition-all">
+                                                <button onClick={() => handleReorderLocal(st.id, 'UP')} className="p-1 hover:bg-green-500/10 hover:text-green-500 transition-all cursor-pointer"><ArrowUp className="size-3" /></button>
+                                                <button onClick={() => handleReorderLocal(st.id, 'DOWN')} className="p-1 hover:bg-red-500/10 hover:text-red-500 transition-all cursor-pointer"><ArrowDown className="size-3" /></button>
                                             </div>
                                         )}
 
@@ -669,7 +669,7 @@ export function TicketCard({
                                                             }
                                                         }}
                                                     />
-                                                    <Button size="icon" className="h-8 w-8 rounded-none" onClick={() => {
+                                                    <Button size="icon" className="h-8 w-8 rounded-none cursor-pointer" onClick={() => {
                                                         setLocalSubtasks(prev => prev.map(s => s.id === st.id ? { ...s, title: editingTitle } : s));
                                                         setEditingSubtaskId(null);
                                                     }}><Check className="size-4" /></Button>
@@ -685,7 +685,7 @@ export function TicketCard({
                                                     {!isLocked && st.status !== 'DONE' && (
                                                         <button 
                                                             onClick={() => { setEditingSubtaskId(st.id); setEditingTitle(st.title); }}
-                                                            className="opacity-0 group-hover:opacity-40 hover:opacity-100 transition-opacity"
+                                                            className="opacity-0 group-hover:opacity-40 hover:opacity-100 transition-all cursor-pointer"
                                                         >
                                                             <Pencil className="size-3" />
                                                         </button>
@@ -698,9 +698,9 @@ export function TicketCard({
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-[9px] font-black uppercase text-muted-foreground/40">Estimado</span>
                                                     <div className="flex items-center gap-1">
-                                                        {!isLocked && st.status !== 'DONE' && <button onClick={() => handleAddTime(st.id, -5)} className="size-4 flex items-center justify-center hover:bg-red-500/10 hover:text-red-500 text-xs">-</button>}
+                                                        {!isLocked && st.status !== 'DONE' && <button onClick={() => handleAddTime(st.id, -5)} className="size-4 flex items-center justify-center hover:bg-red-500/10 hover:text-red-500 text-xs cursor-pointer">-</button>}
                                                         <span className="text-sm font-mono font-black bg-foreground/5 px-3 py-1">{formatChronometer(st.estimatedTime * 60)}</span>
-                                                        {!isLocked && st.status !== 'DONE' && <button onClick={() => handleAddTime(st.id, 5)} className="size-4 flex items-center justify-center hover:bg-green-500/10 hover:text-green-500 text-xs">+</button>}
+                                                        {!isLocked && st.status !== 'DONE' && <button onClick={() => handleAddTime(st.id, 5)} className="size-4 flex items-center justify-center hover:bg-green-500/10 hover:text-green-500 text-xs cursor-pointer">+</button>}
                                                     </div>
                                                 </div>
 
@@ -761,7 +761,7 @@ export function TicketCard({
                                                 <Button 
                                                     variant="ghost" 
                                                     size="icon" 
-                                                    className="size-8 rounded-none opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all"
+                                                    className="size-8 rounded-none opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all cursor-pointer"
                                                     onClick={() => handleLocalDelete(st.id)}
                                                 >
                                                     <Trash2 className="size-3.5" />
@@ -838,9 +838,9 @@ export function TicketCard({
                                 {isDirty && !isLocked && !isSyncing && (
                                     <Button 
                                         onClick={handleSync}
-                                        className="h-12 rounded-none bg-green-600 hover:bg-green-700 font-black uppercase tracking-widest animate-in fade-in zoom-in-95 duration-200"
+                                        className="h-12 rounded-none bg-green-600 hover:bg-green-700 font-black uppercase tracking-widest animate-in fade-in zoom-in-95 duration-200 cursor-pointer"
                                     >
-                                        Guardar Sincronización
+                                        Guardar Cambios
                                     </Button>
                                 )}
                                 {isSyncing && (
@@ -904,7 +904,7 @@ export function TicketCard({
                                             </CommandList>
                                             {localLeadId && (
                                                 <div className="p-2 border-t bg-muted/20">
-                                                    <Button variant="ghost" onClick={handleUnassign} className="w-full h-8 text-[9px] font-black uppercase text-red-500 hover:bg-red-500/10 rounded-none">
+                                                    <Button variant="ghost" onClick={handleUnassign} className="w-full h-8 text-[9px] font-black uppercase text-red-500 hover:bg-red-500/10 rounded-none cursor-pointer">
                                                         <X className="size-3 mr-2" /> Limpiar Todo
                                                     </Button>
                                                 </div>

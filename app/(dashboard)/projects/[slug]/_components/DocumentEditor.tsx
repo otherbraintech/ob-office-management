@@ -77,64 +77,68 @@ export function DocumentEditor({ document, projectName }: DocumentEditorProps) {
   };
 
   return (
-    <div className="flex flex-col gap-4 flex-1 h-[calc(100vh-250px)]">
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold">{document.name}.md</h3>
-        <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" onClick={handleExport} title="Exportar como .zip">
-            <Download className="h-4 w-4 mr-2" />
-            <span className="hidden md:inline">Exportar</span>
+    <div className="flex flex-col gap-6 animate-in fade-in duration-700 h-[750px]">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-2 border-foreground/5 pb-4">
+        <div>
+           <h3 className="font-black uppercase text-[10px] tracking-widest text-muted-foreground/40 mb-1">Archivo Nexus Activo</h3>
+           <p className="font-black uppercase text-xl tracking-tighter">{document.name}.md</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button size="sm" variant="outline" className="rounded-none border-2 font-black uppercase text-[9px] tracking-widest h-10 px-4" onClick={handleExport}>
+            <Download className="h-3.5 w-3.5 mr-2" />
+            Exportar
           </Button>
-          <Button size="sm" variant="outline" onClick={handleCopy} title="Copiar Markdown">
-             <Copy className="h-4 w-4 mr-2" />
-             <span className="hidden md:inline">Copiar</span>
+          <Button size="sm" variant="outline" className="rounded-none border-2 font-black uppercase text-[9px] tracking-widest h-10 px-4" onClick={handleCopy}>
+             <Copy className="h-3.5 w-3.5 mr-2" />
+             Copiar
           </Button>
-          <Button size="sm" variant="secondary" onClick={handleGenerateTickets} disabled={isGenerating || isPending}>
-            <Ticket className="h-4 w-4 mr-2" />
-            {isGenerating ? "Generando..." : <span className="hidden md:inline">Generar Tickets</span>}
+          <Button size="sm" className="rounded-none bg-primary text-primary-foreground font-black uppercase text-[9px] tracking-widest h-10 px-6 shadow-[4px_4px_0px_rgba(0,0,0,0.1)]" onClick={handleGenerateTickets} disabled={isGenerating || isPending}>
+            <Ticket className="h-3.5 w-3.5 mr-2" />
+            {isGenerating ? "Procesando..." : "Generar Tickets"}
           </Button>
-          <Button size="sm" onClick={handleSave} disabled={isPending}>
-            <Save className="h-4 w-4 mr-2" />
-            {isPending ? "Guardando..." : <span className="hidden md:inline">Guardar</span>}
+          <Button size="sm" className="rounded-none bg-foreground text-background font-black uppercase text-[9px] tracking-widest h-10 px-6 shadow-[4px_4px_0px_rgba(0,0,0,0.1)]" onClick={handleSave} disabled={isPending}>
+            <Save className="h-3.5 w-3.5 mr-2" />
+            {isPending ? "Sincronizando..." : "Guardar"}
           </Button>
         </div>
       </div>
       
-      <Tabs defaultValue="edit" className="flex-1 flex flex-col h-full w-full">
-        <div className="flex items-center justify-between mb-2">
-            <TabsList>
-                <TabsTrigger value="edit" className="gap-2"><Code className="h-4 w-4" /> Editar</TabsTrigger>
-                <TabsTrigger value="preview" className="gap-2"><Eye className="h-4 w-4" /> Vista Previa</TabsTrigger>
+      <Tabs defaultValue="edit" className="flex-1 flex flex-col min-h-0">
+        <div className="flex items-center justify-between mb-4">
+            <TabsList className="bg-muted/30 p-1 rounded-none border-b-2 border-foreground/5 h-10">
+                <TabsTrigger value="edit" className="rounded-none text-[9px] font-black uppercase tracking-widest data-[state=active]:bg-foreground data-[state=active]:text-background"><Code className="h-3 w-3 mr-2" /> Editar</TabsTrigger>
+                <TabsTrigger value="preview" className="rounded-none text-[9px] font-black uppercase tracking-widest data-[state=active]:bg-foreground data-[state=active]:text-background"><Eye className="h-3 w-3 mr-2" /> Vista Previa</TabsTrigger>
             </TabsList>
             
-            <Button size="sm" variant="ghost" className="text-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950" onClick={handleAssistGeneration} disabled={isAssisting || isPending}>
-                <Sparkles className="h-4 w-4 mr-2" />
-                {isAssisting ? "Generando..." : "Generar Plantilla IA"}
+            <Button size="sm" variant="ghost" className="text-primary hover:bg-primary/10 rounded-none font-black uppercase text-[9px] tracking-widest h-10" onClick={handleAssistGeneration} disabled={isAssisting || isPending}>
+                <Sparkles className="h-3.5 w-3.5 mr-2" />
+                {isAssisting ? "Consultando IA..." : "Generar Plantilla Nexus"}
             </Button>
         </div>
 
-        <TabsContent value="edit" className="flex-1 mt-0 h-full border rounded-md relative data-[state=active]:flex">
+        <TabsContent value="edit" className="flex-1 mt-0 border-2 border-foreground/5 relative data-[state=active]:flex min-h-0 overflow-hidden">
             <Textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="resize-none border-none h-full min-h-[400px] w-full font-mono text-sm p-4 leading-relaxed bg-muted/10 shadow-none focus-visible:ring-0"
-              placeholder="# Título del documento..."
+              className="resize-none border-none h-full w-full font-mono text-sm p-6 leading-relaxed bg-muted/5 shadow-none focus-visible:ring-0 rounded-none"
+              placeholder="# Inicia la planificación de arquitectura..."
             />
-            <div className="absolute bottom-4 right-4 opacity-30 pointer-events-none">
-              <Wand2 className="h-8 w-8" />
+            <div className="absolute bottom-6 right-6 opacity-5 pointer-events-none">
+              <Sparkles className="size-24" />
             </div>
         </TabsContent>
 
-        <TabsContent value="preview" className="flex-1 mt-0 border rounded-md p-6 bg-background overflow-y-auto data-[state=active]:block">
+        <TabsContent value="preview" className="flex-1 mt-0 border-2 border-foreground/5 p-8 bg-background overflow-y-auto data-[state=active]:block min-h-0 rounded-none scrollbar-thin">
             {content ? (
-                <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none w-full prose-headings:scroll-m-20 prose-a:text-primary hover:prose-a:text-primary/80">
+                <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none w-full prose-headings:font-black prose-headings:uppercase prose-headings:tracking-tighter prose-p:font-medium prose-p:text-muted-foreground/80">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                         {content}
                     </ReactMarkdown>
                 </div>
             ) : (
-                <div className="text-center text-muted-foreground italic pt-12">
-                    El documento está vacío. Añade contenido o usa la plantilla IA.
+                <div className="py-24 flex flex-col items-center justify-center text-center gap-4 opacity-10 border-4 border-dashed border-foreground/5 font-black uppercase text-[10px] tracking-widest">
+                    <Wand2 className="size-16" />
+                    <p>El documento requiere contenido técnico</p>
                 </div>
             )}
         </TabsContent>

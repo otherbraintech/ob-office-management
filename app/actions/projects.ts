@@ -67,3 +67,17 @@ export async function getProjects() {
     orderBy: { createdAt: 'desc' }
   });
 }
+
+export async function updateProject(id: string, data: { name?: string, description?: string, status?: string }) {
+  const session = await getSession();
+  if (!can(session, 'update', 'Project')) {
+    throw new Error('Unauthorized');
+  }
+
+  const result = await prisma.project.update({
+    where: { id },
+    data
+  });
+  
+  return result;
+}
