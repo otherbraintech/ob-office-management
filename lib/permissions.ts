@@ -8,7 +8,7 @@ export type AuthUser = {
 };
 
 export type Action = "create" | "read" | "update" | "delete" | "track_time";
-export type ResourceType = "Project" | "Module" | "Ticket" | "Subtask" | "Expense";
+export type ResourceType = "Project" | "Module" | "Ticket" | "Subtask" | "Expense" | "User";
 
 export function can(
   user: AuthUser | null,
@@ -18,8 +18,8 @@ export function can(
 ): boolean {
   if (!user) return false;
 
-  // CEO tiene permisos globales absolutos
-  if (user.role === "CEO") return true;
+  // CEO y ADMIN_DEV tienen permisos globales absolutos
+  if (user.role === "CEO" || user.role === "ADMIN_DEV") return true;
 
   switch (resourceType) {
     case "Ticket":

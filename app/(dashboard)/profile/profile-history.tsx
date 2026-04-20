@@ -26,98 +26,112 @@ export function ProfileHistory({ totalHours, manHoursCompleted, tickets }: Profi
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {/* Stats Header */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card className="rounded-none border-2 border-foreground/5 bg-primary/5">
-                    <CardHeader className="pb-2">
+            {/* Stats Header - Refined for Pro look */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                <Card className="rounded-none border-2 border-foreground/5 bg-background hover:border-primary/20 transition-all group">
+                    <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
                         <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Horas Totales</CardTitle>
+                        <Clock className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
                     </CardHeader>
                     <CardContent>
-                        <div className="flex items-center gap-2">
-                            <Clock className="size-5 text-primary" />
-                            <span className="text-3xl font-black font-mono">{totalHours}h</span>
+                        <div className="flex items-baseline gap-1">
+                            <span className="text-4xl font-black font-mono tracking-tighter">{totalHours}</span>
+                            <span className="text-xs font-black uppercase text-muted-foreground">horas</span>
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="rounded-none border-2 border-foreground/5 bg-green-500/5">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Productividad (HH)</CardTitle>
+
+                <Card className="rounded-none border-2 border-foreground/5 bg-background hover:border-green-500/20 transition-all group">
+                    <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
+                        <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Productividad HH</CardTitle>
+                        <Timer className="size-4 text-muted-foreground group-hover:text-green-500 transition-colors" />
                     </CardHeader>
                     <CardContent>
-                        <div className="flex items-center gap-2">
-                            <Timer className="size-5 text-green-500" />
-                            <span className="text-3xl font-black font-mono">{manHoursCompleted}h</span>
+                        <div className="flex items-baseline gap-1">
+                            <span className="text-4xl font-black font-mono tracking-tighter">{manHoursCompleted}</span>
+                            <span className="text-xs font-black uppercase text-muted-foreground">horas</span>
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="rounded-none border-2 border-foreground/5 bg-muted/10">
-                    <CardHeader className="pb-2">
+
+                <Card className="rounded-none border-2 border-foreground/5 bg-background hover:border-blue-500/20 transition-all group sm:col-span-2 xl:col-span-1">
+                    <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
                         <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Misiones OK</CardTitle>
+                        <CheckCircle2 className="size-4 text-muted-foreground group-hover:text-blue-500 transition-colors" />
                     </CardHeader>
                     <CardContent>
-                        <div className="flex items-center gap-2">
-                            <CheckCircle2 className="size-5 text-green-500/50" />
-                            <span className="text-3xl font-black font-mono">{tickets.filter(t => t.status === 'DONE').length}</span>
+                        <div className="flex items-baseline gap-1">
+                            <span className="text-4xl font-black font-mono tracking-tighter">{tickets.filter(t => t.status === 'DONE').length}</span>
+                            <span className="text-xs font-black uppercase text-muted-foreground">tickets</span>
                         </div>
                     </CardContent>
                 </Card>
             </div>
 
             {/* History List */}
-            <div className="space-y-4">
-                <h3 className="text-xl font-black uppercase tracking-tighter flex items-center gap-2 border-b-2 border-foreground/5 pb-2">
-                    <Layers className="size-5 text-primary" /> Historial de Operaciones
-                </h3>
+            <div className="space-y-6">
+                <div className="flex items-center justify-between border-b-2 border-foreground/5 pb-4">
+                    <h3 className="text-lg font-black uppercase tracking-tighter flex items-center gap-3">
+                        <Layers className="size-5 text-primary" /> Historial Operativo
+                    </h3>
+                    <Badge variant="secondary" className="rounded-none font-bold text-[9px] px-2 py-0.5">
+                        {tickets.length} REGISTROS
+                    </Badge>
+                </div>
                 
-                <div className="space-y-3">
+                <div className="space-y-4">
                     {tickets.map(ticket => {
-                        const isUnderBudget = ticket.estimatedTime > 0 && ticket.realTime <= ticket.estimatedTime;
-                        const isOverBudget = ticket.estimatedTime > 0 && ticket.realTime > ticket.estimatedTime;
+                        const isUnderBudget = ticket.estimatedTime > 0 && ticket.realTime <= (ticket.estimatedTime * 60);
+                        const isOverBudget = ticket.estimatedTime > 0 && ticket.realTime > (ticket.estimatedTime * 60);
                         
                         return (
-                            <Collapsible key={ticket.id} className="group/collapsible border-2 border-foreground/5 bg-background">
-                                <CollapsibleTrigger className="w-full">
-                                    <div className="p-4 flex items-center justify-between hover:bg-muted/30 transition-colors text-left gap-4">
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-3 mb-1">
+                            <Collapsible key={ticket.id} className="group/collapsible bg-background border-2 border-foreground/5 hover:border-foreground/10 transition-all overflow-hidden">
+                                <CollapsibleTrigger className="w-full cursor-pointer">
+                                    <div className="p-4 md:p-5 flex flex-col md:flex-row md:items-center justify-between hover:bg-muted/30 transition-colors text-left gap-4">
+                                        <div className="flex-1 min-w-0 space-y-1">
+                                            <div className="flex items-center gap-3 flex-wrap">
                                                 <Badge variant="outline" className={cn(
-                                                    "rounded-none text-[8px] font-black uppercase px-2",
+                                                    "rounded-none text-[8px] font-black uppercase px-2 h-4",
                                                     ticket.status === 'DONE' ? "border-green-500/30 text-green-500 bg-green-500/5" : "border-primary/30 text-primary bg-primary/5"
                                                 )}>
                                                     {ticket.status}
                                                 </Badge>
                                                 {ticket.project && (
-                                                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground truncate">
-                                                        [{ticket.project.name.slice(0, 15)}]
+                                                    <span className="text-[9px] font-bold uppercase tracking-[0.1em] text-muted-foreground bg-muted/50 px-1.5 rounded-none">
+                                                        {ticket.project.name}
                                                     </span>
                                                 )}
                                             </div>
-                                            <h4 className="font-black text-sm uppercase tracking-tight truncate group-hover/collapsible:text-primary transition-colors">
+                                            <h4 className="font-black text-sm md:text-base uppercase tracking-tight truncate group-hover/collapsible:text-primary transition-colors">
                                                 {ticket.title}
                                             </h4>
                                         </div>
                                         
-                                        <div className="flex items-center gap-6 shrink-0">
-                                            {/* Logic for Profit vs Loss in Time */}
-                                            {ticket.estimatedTime > 0 ? (
+                                        <div className="flex items-center justify-between md:justify-end gap-6 shrink-0 pt-2 md:pt-0 border-t border-foreground/5 md:border-0">
+                                            {/* Profit/Loss logic */}
+                                            {ticket.status === 'DONE' && (
                                                 <div className="flex flex-col items-end">
-                                                    <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1">Delta</span>
-                                                    <div className="flex items-center gap-1.5">
-                                                        {isUnderBudget ? (
-                                                            <Badge variant="outline" className="rounded-none border-green-500 text-green-500 bg-green-500/10 font-mono font-black gap-1">
-                                                                <Rocket className="size-3" /> PROFIT +{formatTimeSeconds((ticket.estimatedTime * 60) - ticket.realTime)}
-                                                            </Badge>
-                                                        ) : isOverBudget ? (
-                                                            <Badge variant="outline" className="rounded-none border-red-500 text-red-500 bg-red-500/10 font-mono font-black gap-1">
-                                                                <AlertTriangle className="size-3" /> RETRASO -{formatTimeSeconds(ticket.realTime - (ticket.estimatedTime * 60))}
-                                                            </Badge>
-                                                        ) : null}
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <div className="flex flex-col items-end">
-                                                    <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1">Costo Real</span>
-                                                    <span className="font-mono font-bold text-sm text-muted-foreground">{formatTimeSeconds(ticket.realTime || 0)}</span>
+                                                    {ticket.estimatedTime > 0 ? (
+                                                        <>
+                                                            <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground mb-1">Delta Desempeño</span>
+                                                            {isUnderBudget ? (
+                                                                <div className="flex items-center gap-1 text-green-500 font-mono text-[10px] font-black">
+                                                                    <Rocket className="size-3" /> +{formatTimeSeconds((ticket.estimatedTime * 60) - ticket.realTime)}
+                                                                </div>
+                                                            ) : isOverBudget ? (
+                                                                <div className="flex items-center gap-1 text-red-500 font-mono text-[10px] font-black">
+                                                                    <AlertTriangle className="size-3" /> -{formatTimeSeconds(ticket.realTime - (ticket.estimatedTime * 60))}
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-[10px] font-mono font-black text-muted-foreground">A TIEMPO</span>
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground mb-1">Costo Final</span>
+                                                            <span className="font-mono font-bold text-[11px]">{formatTimeSeconds(ticket.realTime)}</span>
+                                                        </>
+                                                    )}
                                                 </div>
                                             )}
                                             <ChevronDown className="size-4 text-muted-foreground group-data-[state=open]/collapsible:rotate-180 transition-transform" />
@@ -125,42 +139,53 @@ export function ProfileHistory({ totalHours, manHoursCompleted, tickets }: Profi
                                     </div>
                                 </CollapsibleTrigger>
                                 <CollapsibleContent>
-                                    <div className="bg-muted/10 border-t-2 border-foreground/5 p-4 space-y-4">
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4 border-b border-foreground/5">
+                                    <div className="bg-muted/5 border-t border-foreground/5 p-5 space-y-6">
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                                             <div className="space-y-1">
-                                                <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Tiempo Estimado</span>
-                                                <p className="font-mono text-sm">{formatTimeMinutes(ticket.estimatedTime)}</p>
+                                                <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Original Est.</span>
+                                                <p className="font-mono text-xs font-bold">{formatTimeMinutes(ticket.estimatedTime)}</p>
                                             </div>
                                             <div className="space-y-1">
-                                                <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Tiempo Invertido</span>
-                                                <p className="font-mono text-sm">{formatTimeSeconds(ticket.realTime)}</p>
+                                                <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Real Inv.</span>
+                                                <p className="font-mono text-xs font-bold">{formatTimeSeconds(ticket.realTime)}</p>
                                             </div>
                                             <div className="space-y-1">
-                                                <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Autor</span>
-                                                <p className="text-xs font-bold truncate">{ticket.creator?.name || 'Sistema'}</p>
+                                                <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Eficiencia</span>
+                                                <p className="font-mono text-xs font-bold">
+                                                    {ticket.estimatedTime > 0 
+                                                        ? `${Math.round(((ticket.estimatedTime * 60) / (ticket.realTime || 1)) * 100)}%`
+                                                        : 'N/A'}
+                                                </p>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Último Update</span>
+                                                <p className="text-[10px] font-bold uppercase">{new Date(ticket.updatedAt).toLocaleDateString()}</p>
                                             </div>
                                         </div>
 
-                                        {ticket.subtasks && ticket.subtasks.length > 0 ? (
-                                            <div className="space-y-2">
-                                                <h5 className="text-[10px] font-black uppercase tracking-widest text-primary mb-3">Desglose de Subtareas</h5>
-                                                {ticket.subtasks.map((st: any) => (
-                                                    <div key={st.id} className="flex justify-between items-center p-2.5 bg-background border border-foreground/5">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className={cn("size-1.5 rotate-45 rounded-none", st.status === 'DONE' ? 'bg-green-500' : 'bg-primary/20')} />
-                                                            <span className="text-xs font-bold uppercase">{st.title}</span>
+                                        {ticket.subtasks && ticket.subtasks.length > 0 && (
+                                            <div className="space-y-3 pt-4 border-t border-foreground/5">
+                                                <h5 className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/60">Análisis Técnico de Subtareas</h5>
+                                                <div className="grid gap-2">
+                                                    {ticket.subtasks.map((st: any) => (
+                                                        <div key={st.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-background border border-foreground/5 gap-2">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className={cn("size-2 rotate-45 shrink-0", st.status === 'DONE' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-primary/20')} />
+                                                                <span className="text-[10px] font-bold uppercase truncate">{st.title}</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-4 text-[9px] font-mono shrink-0 justify-end">
+                                                                <span className="text-muted-foreground">EST: {st.estimatedTime}m</span>
+                                                                <span className={cn(
+                                                                    "font-black px-1.5 py-0.5",
+                                                                    (st.realTime / 60) > st.estimatedTime ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'
+                                                                )}>
+                                                                    REAL: {formatTimeSeconds(st.realTime)}
+                                                                </span>
+                                                            </div>
                                                         </div>
-                                                        <div className="flex items-center gap-4 text-[10px] font-mono">
-                                                            <span className="text-muted-foreground">Est: {st.estimatedTime}m</span>
-                                                            <span className={(st.realTime / 60) > st.estimatedTime ? 'text-red-500 font-bold' : 'text-green-500 font-bold'}>
-                                                                Real: {formatTimeSeconds(st.realTime)}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                                    ))}
+                                                </div>
                                             </div>
-                                        ) : (
-                                            <p className="text-xs text-muted-foreground/60 italic text-center py-4">Este requerimiento no contiene subtareas registradas.</p>
                                         )}
                                     </div>
                                 </CollapsibleContent>
@@ -169,9 +194,12 @@ export function ProfileHistory({ totalHours, manHoursCompleted, tickets }: Profi
                     })}
 
                     {tickets.length === 0 && (
-                        <div className="text-center py-20 border-4 border-dashed border-foreground/5 opacity-50">
-                            <h3 className="text-xl font-black uppercase tracking-widest">Sin Historial</h3>
-                            <p className="text-sm font-bold uppercase tracking-tight">El operador aún no ha registrado despliegues.</p>
+                        <div className="text-center py-24 border-2 border-dashed border-foreground/5">
+                            <div className="inline-flex size-14 items-center justify-center rounded-none bg-muted mb-4">
+                                <Layers className="size-6 text-muted-foreground/40" />
+                            </div>
+                            <h3 className="text-lg font-black uppercase tracking-widest text-muted-foreground/60">Sin Historial de Operaciones</h3>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 mt-2">Inicia un ticket para comenzar el despliegue.</p>
                         </div>
                     )}
                 </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,7 @@ import { assignTicket, updateSubtaskTime, addSubtaskToTicket, deleteSubtask, una
 import { Textarea } from '@/components/ui/textarea';
 import { completeSubtask } from '@/app/actions/time';
 import { suggestSubtasksAI, improveSubtaskTextAI, regenerateFullSubtasksAI } from '@/app/actions/ai-tools';
-import { Clock, Plus, Trash2, CheckCircle2, UserPlus, Sparkles, X, User, LayoutList, Loader2, UserCheck, ArrowUp, ArrowDown, Check, ChevronsUpDown, Pencil, Play, Square, PauseCircle, XCircle } from 'lucide-react';
+import { Clock, Plus, Trash2, CheckCircle2, UserPlus, Sparkles, X, User, LayoutList, Loader2, UserCheck, ArrowUp, ArrowDown, ArrowRight, Check, ChevronsUpDown, Pencil, Play, Square, PauseCircle, XCircle } from 'lucide-react';
 import { toast } from "sonner";
 import { startShift, pauseActiveTicket, resumeTicket } from '@/app/actions/time';
 import { 
@@ -43,19 +43,30 @@ import { cn } from "@/lib/utils";
 export function TicketCard({ 
     ticket, 
     currentUserId, 
-    allUsers = []
+    allUsers = [],
+    isSimple = false
 }: { 
     ticket: any, 
     currentUserId: string,
-    allUsers?: any[] 
+    allUsers?: any[],
+    isSimple?: boolean
 }) {
     const [isAssigning, setIsAssigning] = useState(false);
+    const [showSubtasks, setShowSubtasks] = useState(!isSimple);
     const [isAddingSubtask, setIsAddingSubtask] = useState(false);
     const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
     const [newSubtaskTime, setNewSubtaskTime] = useState(30);
     const [isAILoading, setIsAILoading] = useState(false);
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-    const [localSubtasks, setLocalSubtasks] = useState([...ticket.subtasks].sort((a, b) => a.order - b.order));
+    const [localSubtasks, setLocalSubtasks] = useState<any[]>([]);
+    
+    // Initialize subtasks on mount to avoid hydration mismatch
+    useEffect(() => {
+        setLocalSubtasks([...ticket.subtasks]
+            .sort((a, b) => a.order - b.order)
+            .map((st: any, i: number) => ({ ...st, initialIndex: i }))
+        );
+    }, [ticket.id]); // Only re-init when ticket changes
     const [localLeadId, setLocalLeadId] = useState(ticket.leadId);
     const [localCollaboratorIds, setLocalCollaboratorIds] = useState<string[]>(ticket.collaborators?.map((c: any) => c.id) || []);
     const [isSyncing, setIsSyncing] = useState(false);
@@ -141,8 +152,8 @@ export function TicketCard({
 
     // Persistence between revalidations & Refresh (F5)
     useEffect(() => {
-        setLocalSubtasks([...ticket.subtasks].sort((a, b) => a.order - b.order));
         setLocalLeadId(ticket.leadId);
+        setLocalCollaboratorIds(ticket.collaborators?.map((c: any) => c.id) || []);
         setLocalCollaboratorIds(ticket.collaborators?.map((c: any) => c.id) || []);
         
         if (typeof window !== 'undefined') {
@@ -352,9 +363,21 @@ export function TicketCard({
         }
     };
 
-    const isDirty = (JSON.stringify(localSubtasks) !== JSON.stringify([...ticket.subtasks].sort((a, b) => a.order - b.order))) ||  
-                    (localLeadId !== ticket.leadId) ||
-                    (JSON.stringify([...localCollaboratorIds].sort()) !== JSON.stringify((ticket.collaborators?.map((c: any) => c.id) || []).sort()));
+    const isDirty = useMemo(() => {
+        const subtasksChanged = JSON.stringify(localSubtasks.map(({ initialIndex, ...st }: any) => {
+            const { id, ...rest } = st;
+            return rest;
+        })) !== JSON.stringify([...ticket.subtasks].sort((a, b) => a.order - b.order).map((st: any) => {
+            const { id, initialIndex, ...rest } = st;
+            return rest;
+        }));
+
+        const leadChanged = localLeadId !== ticket.leadId;
+        const collaboratorsChanged = JSON.stringify([...localCollaboratorIds].sort()) !== 
+                                   JSON.stringify((ticket.collaborators?.map((c: any) => c.id) || []).sort());
+
+        return subtasksChanged || leadChanged || collaboratorsChanged;
+    }, [localSubtasks, ticket.subtasks, localLeadId, ticket.leadId, localCollaboratorIds, ticket.collaborators]);
 
     const isLocked = ticket.status !== 'TODO' && ticket.status !== 'BACKLOG';
 
@@ -474,11 +497,17 @@ export function TicketCard({
     };
 
     return (
-        <div className="flex flex-col bg-background min-h-[90vh] md:min-h-0">
+        <div className={cn(
+            "flex flex-col bg-background border-2 border-foreground/5",
+            !isSimple && "min-h-[90vh] md:min-h-0"
+        )}>
             {/* Mission Hero Header */}
-            <div className="relative overflow-hidden border-b-2 border-foreground/10 bg-muted/30 px-6 py-8 md:px-12 md:py-12">
-                <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div className="space-y-4 max-w-3xl">
+            <div className={cn(
+                "relative overflow-hidden border-b-2 border-foreground/10 bg-muted/30",
+                isSimple ? "px-4 py-4" : "px-6 py-8 md:px-10 md:py-10"
+            )}>
+                <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    <div className="space-y-3 max-w-3xl">
                         <div className="flex flex-wrap items-center gap-3">
                             <Badge className="rounded-none bg-primary text-primary-foreground font-black text-[10px] tracking-[0.2em] px-3 py-1 uppercase shadow-xl shadow-primary/20">
                                 Ticket #{ticket.id.slice(-4).toUpperCase()}
@@ -492,7 +521,10 @@ export function TicketCard({
                                  ticket.priority === 'MEDIUM' ? 'Prioridad Media' : 'Prioridad Baja'}
                             </Badge>
                         </div>
-                        <h2 className="text-2xl md:text-3xl font-black tracking-tighter uppercase leading-none text-foreground">
+                        <h2 className={cn(
+                            "font-black tracking-tighter uppercase leading-none text-foreground",
+                            isSimple ? "text-xl" : "text-2xl md:text-3xl"
+                        )}>
                             {ticket.title}
                         </h2>
                         <div className="flex flex-wrap items-center gap-2">
@@ -513,9 +545,12 @@ export function TicketCard({
                                 }
                             </Badge>
                         </div>
-                        <p className="text-xs md:text-sm text-muted-foreground/80 font-medium leading-relaxed max-w-xl">
-                            {ticket.description || "Sin descripción detallada."}
-                        </p>
+                        <div className="space-y-1">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Descripción General:</span>
+                            <p className="text-sm md:text-base text-foreground font-bold leading-relaxed max-w-5xl">
+                                {ticket.description || "Sin descripción detallada."}
+                            </p>
+                        </div>
                     </div>
 
                     <div className="flex flex-col items-end gap-2">
@@ -527,68 +562,99 @@ export function TicketCard({
                 </div>
                 
                 {/* Background Decor */}
-                <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-primary/5 to-transparent pointer-events-none" />
+                {!isSimple && <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-primary/5 to-transparent pointer-events-none" />}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] flex-1">
+            <div className={cn(
+                "grid grid-cols-1 flex-1",
+                !isSimple && "lg:grid-cols-[1fr_340px]"
+            )}>
                 {/* Main Content Area */}
-                <div className="p-6 md:p-12 space-y-12">
+                <div className={cn(
+                    "flex-1 space-y-8",
+                    isSimple ? "p-4" : "p-4 md:p-6"
+                )}>
                     
                     {/* Subtasks / Fragments */}
-                    <div className="space-y-6">
-                        <div className="flex items-center justify-between border-b-2 border-foreground/5 pb-4">
+                    <div className={isSimple ? "space-y-4" : "space-y-6"}>
+                        <div className="flex items-center justify-between border-b-2 border-foreground/5 pb-4 cursor-pointer hover:bg-foreground/5 transition-all px-2" onClick={() => isSimple && setShowSubtasks(!showSubtasks)}>
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-primary/10">
                                     <LayoutList className="size-5 text-primary" />
                                 </div>
-                                <h3 className="text-lg font-black uppercase tracking-tighter">Lista de Tareas</h3>
+                                <h3 className="text-sm font-black uppercase tracking-tighter">
+                                    {isSimple && (showSubtasks ? <ArrowDown className="size-4 inline mr-2" /> : <ArrowRight className="size-4 inline mr-2" />)}
+                                    Lista de Tareas
+                                </h3>
                                 <Badge variant="secondary" className="rounded-none font-bold text-[10px] px-2 bg-foreground/5">
                                     {localSubtasks.length}
                                 </Badge>
                                 {isDirty && (
                                     <span className="text-[10px] font-bold text-primary italic animate-pulse lowercase ml-2 flex items-center gap-1">
-                                        (Cambios sin sincronizar)
+                                        (Cambios sin guardar)
                                     </span>
                                 )}
                             </div>
-
-                            {!isLocked && (
-                                <div className="flex items-center gap-2">
-                                    <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <Button variant="ghost" size="sm" className="h-8 text-[10px] font-bold uppercase tracking-widest hover:bg-primary/5 hover:text-primary transition-all cursor-pointer">
-                                                <Sparkles className="size-3 mr-2" /> Recrear Subtareas
-                                            </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent className="rounded-none border-4 border-foreground/5">
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle className="font-black uppercase tracking-tighter text-xl">¿Re-Estructurar Tareas?</AlertDialogTitle>
-                                                <AlertDialogDescription className="text-xs font-medium uppercase tracking-wide leading-relaxed">
-                                                    Esta acción utilizará inteligencia artificial para regenerar totalmente la secuencia de trabajo basado en la descripción actual. Se perderán las tareas existentes.
-                                                </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter className="mt-8">
-                                                <AlertDialogCancel className="rounded-none font-bold uppercase text-[10px] cursor-pointer">Cancelar</AlertDialogCancel>
-                                                <AlertDialogAction onClick={handleAIRegenerate} className="rounded-none font-black uppercase text-[10px] px-8 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl shadow-primary/20 cursor-pointer">
-                                                    Continuar
-                                                </AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                                    <Button 
-                                        onClick={() => setIsAddingSubtask(!isAddingSubtask)}
-                                        variant="outline" 
-                                        size="sm" 
-                                        className="h-8 rounded-none border-2 border-foreground/10 text-[10px] font-black uppercase tracking-widest hover:border-primary/50 transition-all cursor-pointer"
-                                    >
-                                        <Plus className="size-3 mr-2" /> Añadir Tarea
-                                    </Button>
-                                </div>
-                            )}
                         </div>
 
-                        {/* Add Subtask Inline Form */}
-                        {isAddingSubtask && (
+                        {showSubtasks && (
+                            <div className="space-y-6 animate-in fade-in duration-500">
+                                {/* Subtask Management Toolbar */}
+                                <div className="flex flex-wrap items-center justify-between p-3 bg-muted/30 border-2 border-foreground/5 rounded-none gap-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-1 h-4 bg-primary" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mr-4">Herramientas:</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button variant="outline" size="sm" className="h-9 rounded-none border-2 border-foreground/10 text-[10px] font-black uppercase tracking-widest hover:bg-primary/5 hover:text-primary hover:border-primary/50 transition-all cursor-pointer">
+                                                    <Sparkles className="size-3 mr-2 text-primary" /> Recrear con IA
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent className="rounded-none border-4 border-foreground/5">
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle className="font-black uppercase tracking-tighter text-xl">¿Refactorizar Plan de Trabajo?</AlertDialogTitle>
+                                                    <AlertDialogDescription className="text-xs font-medium uppercase tracking-wide leading-relaxed">
+                                                        La IA analizará la descripción actual para regenerar una secuencia de subtareas optimizada. Se sobrescribirán las tareas existentes.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter className="mt-8">
+                                                    <AlertDialogCancel className="rounded-none font-bold uppercase text-[10px] cursor-pointer">Abortar</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={handleAIRegenerate} className="rounded-none font-black uppercase text-[10px] px-8 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl shadow-primary/20 cursor-pointer">
+                                                        Ejecutar Refactorización
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+
+                                        <Button 
+                                            onClick={() => setIsAddingSubtask(!isAddingSubtask)}
+                                            variant="outline" 
+                                            size="sm" 
+                                            className={cn(
+                                                "h-9 rounded-none border-2 font-black uppercase text-[10px] tracking-widest transition-all px-6 cursor-pointer",
+                                                isAddingSubtask ? "border-primary bg-primary text-primary-foreground" : "border-foreground/10 hover:border-primary/50"
+                                            )}
+                                        >
+                                            <Plus className="size-3 mr-2" /> Nueva Subtarea
+                                        </Button>
+
+                                        {isDirty && !isLocked && (
+                                            <Button 
+                                                onClick={handleSync}
+                                                disabled={isSyncing}
+                                                className="h-9 rounded-none bg-green-600 hover:bg-green-700 text-white font-black uppercase text-[10px] tracking-widest px-6 cursor-pointer border-2 border-green-700/50 shadow-lg shadow-green-500/20 animate-in fade-in zoom-in-95"
+                                            >
+                                                {isSyncing ? <Loader2 className="size-3 animate-spin mr-2" /> : <Check className="size-3 mr-2" />}
+                                                Guardar Cambios
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Add Subtask Inline Form */}
+                                {isAddingSubtask && (
                             <div className="p-6 bg-primary/5 border-2 border-primary/20 space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
                                 <div className="flex gap-4">
                                     <Input 
@@ -637,7 +703,7 @@ export function TicketCard({
                                     <span className="text-xs font-black uppercase tracking-widest">Sin tareas asignadas</span>
                                 </div>
                             ) : (
-                                localSubtasks.map((st: any) => (
+                                localSubtasks.map((st: any, index: number) => (
                                     <div 
                                         key={st.id} 
                                         className={cn(
@@ -648,219 +714,176 @@ export function TicketCard({
                                     >
                                         {/* Drag/Reorder Handles (Hidden if locked) */}
                                         {!isLocked && (
-                                            <div className="flex flex-col opacity-0 group-hover:opacity-100 transition-all">
+                                            <div className="flex flex-col opacity-0 group-hover:opacity-100 transition-all gap-0.5">
                                                 <button onClick={() => handleReorderLocal(st.id, 'UP')} className="p-1 hover:bg-green-500/10 hover:text-green-500 transition-all cursor-pointer"><ArrowUp className="size-3" /></button>
                                                 <button onClick={() => handleReorderLocal(st.id, 'DOWN')} className="p-1 hover:bg-red-500/10 hover:text-red-500 transition-all cursor-pointer"><ArrowDown className="size-3" /></button>
                                             </div>
                                         )}
 
-                                        <div className="flex-1 space-y-2">
-                                            {editingSubtaskId === st.id ? (
-                                                <div className="flex gap-2">
-                                                    <Input 
-                                                        autoFocus
-                                                        value={editingTitle}
-                                                        onChange={(e) => setEditingTitle(e.target.value)}
-                                                        className="h-8 rounded-none border-2 border-primary/30 font-bold"
-                                                        onKeyDown={(e) => {
-                                                            if (e.key === 'Enter') {
-                                                                setLocalSubtasks(prev => prev.map(s => s.id === st.id ? { ...s, title: editingTitle } : s));
-                                                                setEditingSubtaskId(null);
-                                                            }
-                                                        }}
-                                                    />
-                                                    <Button size="icon" className="h-8 w-8 rounded-none cursor-pointer" onClick={() => {
-                                                        setLocalSubtasks(prev => prev.map(s => s.id === st.id ? { ...s, title: editingTitle } : s));
-                                                        setEditingSubtaskId(null);
-                                                    }}><Check className="size-4" /></Button>
-                                                </div>
-                                            ) : (
-                                                <div className="flex items-center gap-3">
-                                                    <span className={cn(
-                                                        "text-sm font-black uppercase tracking-tight",
-                                                        st.status === 'DONE' && "line-through text-foreground"
-                                                    )}>
-                                                        {st.title}
-                                                    </span>
-                                                    {!isLocked && st.status !== 'DONE' && (
-                                                        <button 
-                                                            onClick={() => { setEditingSubtaskId(st.id); setEditingTitle(st.title); }}
-                                                            className="opacity-0 group-hover:opacity-40 hover:opacity-100 transition-all cursor-pointer"
-                                                        >
-                                                            <Pencil className="size-3" />
-                                                        </button>
+                                        {/* Movement Indicator */}
+                                        <div className="min-w-[16px] flex items-center justify-center">
+                                            {typeof st.initialIndex !== 'undefined' ? (
+                                                <>
+                                                    {index < st.initialIndex && (
+                                                        <ArrowUp className="size-3 text-green-500 animate-in fade-in slide-in-from-bottom-1" />
                                                     )}
-                                                </div>
+                                                    {index > st.initialIndex && (
+                                                        <ArrowDown className="size-3 text-red-500 animate-in fade-in slide-in-from-top-1" />
+                                                    )}
+                                                    {index === st.initialIndex && (
+                                                        <div className="size-1 rounded-full bg-muted-foreground/10" />
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <Plus className="size-3 text-primary animate-pulse" />
                                             )}
+                                        </div>
 
-                                            <div className="flex items-center gap-4 md:gap-6 whitespace-nowrap">
-                                                {/* Timer Tags */}
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-[9px] font-black uppercase text-muted-foreground/40">Estimado</span>
-                                                    <div className="flex items-center gap-1">
-                                                        {!isLocked && st.status !== 'DONE' && <button onClick={() => handleAddTime(st.id, -5)} className="size-4 flex items-center justify-center hover:bg-red-500/10 hover:text-red-500 text-xs cursor-pointer">-</button>}
-                                                        <span className="text-sm font-mono font-black bg-foreground/5 px-3 py-1">{formatChronometer(st.estimatedTime * 60)}</span>
-                                                        {!isLocked && st.status !== 'DONE' && <button onClick={() => handleAddTime(st.id, 5)} className="size-4 flex items-center justify-center hover:bg-green-500/10 hover:text-green-500 text-xs cursor-pointer">+</button>}
-                                                    </div>
-                                                </div>
-
-                                                {st.status === 'DONE' && (
-                                                    <div className="flex items-center gap-2 border-l-2 border-foreground/5 pl-4 ml-2">
-                                                        <span className="text-[9px] font-black uppercase text-muted-foreground/40 shrink-0">Completado</span>
-                                                        <div className="flex items-center gap-2 font-mono text-sm font-black">
-                                                            <span className="text-foreground/80">
-                                                                {formatChronometer(st.realTime || 0)}
-                                                            </span>
-                                                            {(st.realTime || 0) !== (st.estimatedTime * 60) && (
-                                                                <span className={cn(
-                                                                    "tracking-tight",
-                                                                    (st.realTime || 0) > (st.estimatedTime * 60) ? "text-red-500" : "text-green-500"
-                                                                )}>
-                                                                    {(st.realTime || 0) > (st.estimatedTime * 60) ? "+" : "-"} {formatChronometer(Math.abs((st.realTime || 0) - (st.estimatedTime * 60)))}
-                                                                </span>
-                                                            )}
+                                        <div className="flex flex-1 flex-col md:flex-row md:items-center justify-between gap-4 w-full min-w-0">
+                                            {/* Subtask Title & Edit */}
+                                            <div className="flex-1 w-full min-w-0">
+                                                {editingSubtaskId === st.id ? (
+                                                    <div className="flex gap-2 w-full">
+                                                        <Input 
+                                                            autoFocus
+                                                            value={editingTitle}
+                                                            onChange={(e) => setEditingTitle(e.target.value)}
+                                                            className="h-10 rounded-none border-2 border-primary/30 font-medium text-sm flex-1"
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') {
+                                                                    setLocalSubtasks(prev => prev.map(s => s.id === st.id ? { ...s, title: editingTitle } : s));
+                                                                    setEditingSubtaskId(null);
+                                                                }
+                                                                if (e.key === 'Escape') setEditingSubtaskId(null);
+                                                            }}
+                                                        />
+                                                        <div className="flex gap-1 shrink-0">
+                                                            <button 
+                                                                className="size-10 flex items-center justify-center bg-green-500/10 text-green-600 hover:bg-green-600 hover:text-white transition-all cursor-pointer border-2 border-green-500/20" 
+                                                                onClick={() => {
+                                                                    setLocalSubtasks(prev => prev.map(s => s.id === st.id ? { ...s, title: editingTitle } : s));
+                                                                    setEditingSubtaskId(null);
+                                                                }}
+                                                            >
+                                                                <Check className="size-5" />
+                                                            </button>
+                                                            <button 
+                                                                className="size-10 flex items-center justify-center bg-red-500/10 text-red-600 hover:bg-red-600 hover:text-white transition-all cursor-pointer border-2 border-red-500/20" 
+                                                                onClick={() => setEditingSubtaskId(null)}
+                                                            >
+                                                                <X className="size-5" />
+                                                            </button>
                                                         </div>
                                                     </div>
-                                                )}
-
-                                                {activeSpeedrunId === st.id && (
-                                                    <div className="flex items-center gap-2 border-l-2 border-primary/20 pl-4 ml-2">
-                                                        <span className="text-[9px] font-black uppercase text-amber-500 tracking-widest shrink-0">Ejecutando</span>
-                                                        <div className="flex items-center gap-2 font-mono text-sm font-black">
-                                                            <span className="text-amber-400">
-                                                                {formatChronometer(speedrunSeconds)}<MovingMilli active={true} />
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {st.status !== 'DONE' && activeSpeedrunId !== st.id && pausedSubtaskTimes[st.id] > 0 && (
-                                                    <div className="flex items-center gap-2 border-l-2 border-amber-500/20 pl-4 ml-2">
-                                                        <span className="text-[9px] font-black uppercase text-amber-500/60 shrink-0">Pausado</span>
-                                                        <span className="text-amber-400 font-mono text-sm font-black italic">
-                                                            {formatChronometer(pausedSubtaskTimes[st.id])}
+                                                ) : (
+                                                    <div className="flex items-center gap-3 overflow-hidden">
+                                                        <span className={cn(
+                                                            "text-sm font-medium leading-tight",
+                                                            st.status === 'DONE' ? "line-through text-muted-foreground opacity-50" : "text-foreground"
+                                                        )}>
+                                                            {st.title}
                                                         </span>
                                                     </div>
                                                 )}
                                             </div>
-                                        </div>
 
-                                        {/* Action Button for subtask */}
-                                        <div className="flex items-center gap-2 shrink-0">
-                                            {activeSpeedrunId === st.id && (
-                                                <Button 
-                                                    size="sm" 
-                                                    className="rounded-none bg-green-500 hover:bg-green-600 text-[9px] font-black uppercase px-4 h-8 animate-in zoom-in-50 duration-300 cursor-pointer shrink-0"
-                                                    onClick={() => handleCompleteSpeedrun(st.id)}
-                                                >
-                                                    Finalizar <CheckCircle2 className="size-3.5 ml-2" />
-                                                </Button>
-                                            )}
-                                            
-                                            {!isLocked && st.status !== 'DONE' && (
-                                                <Button 
-                                                    variant="ghost" 
-                                                    size="icon" 
-                                                    className="size-8 rounded-none opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all cursor-pointer"
-                                                    onClick={() => handleLocalDelete(st.id)}
-                                                >
-                                                    <Trash2 className="size-3.5" />
-                                                </Button>
-                                            )}
+                                            {/* Mobile Divider */}
+                                            <div className="md:hidden w-full h-px bg-foreground/5" />
 
-                                            {st.status === 'DONE' && (
-                                                <div className="size-8 flex items-center justify-center text-green-500">
-                                                    <CheckCircle2 className="size-5" />
+                                            {/* Controls Group (Timer + Actions) */}
+                                            <div className="flex items-center justify-between md:justify-end gap-2 md:gap-6 w-full md:w-auto shrink-0 bg-muted/5 md:bg-transparent p-2 md:p-0">
+                                                {/* Timer Section */}
+                                                <div className="flex items-center gap-3 whitespace-nowrap">
+                                                    {/* Operational Tags (Running/Paused) */}
+                                                    {activeSpeedrunId === st.id && (
+                                                        <div className="flex items-center gap-2 border-r-2 border-primary/20 pr-3">
+                                                            <span className="text-[8px] font-black uppercase text-amber-500">RUNNING</span>
+                                                            <span className="text-amber-400 font-mono text-xs font-black">
+                                                                {formatChronometer(speedrunSeconds)}
+                                                            </span>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Estimation Controls */}
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-[8px] font-black uppercase text-muted-foreground/30">Est.</span>
+                                                        <div className="flex items-center gap-1 border-2 border-foreground/5 p-0.5 bg-background/50">
+                                                            {!isLocked && st.status !== 'DONE' && (
+                                                                <button 
+                                                                    onClick={() => handleAddTime(st.id, -5)} 
+                                                                    className="size-7 flex items-center justify-center border border-foreground/5 hover:border-red-500/50 hover:bg-red-500/5 text-[10px] font-black cursor-pointer"
+                                                                > - </button>
+                                                            )}
+                                                            <span className="text-xs font-mono font-black px-1.5 min-w-[45px] text-center">{formatChronometer(st.estimatedTime * 60)}</span>
+                                                            {!isLocked && st.status !== 'DONE' && (
+                                                                <button 
+                                                                    onClick={() => handleAddTime(st.id, 5)} 
+                                                                    className="size-7 flex items-center justify-center border border-foreground/5 hover:border-green-500/50 hover:bg-green-500/5 text-[10px] font-black cursor-pointer"
+                                                                > + </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {st.status === 'DONE' && (
+                                                        <div className="flex items-center gap-2 border-l border-foreground/10 pl-3">
+                                                            <span className="text-[8px] font-black uppercase text-muted-foreground/30">REAL</span>
+                                                            <span className="text-foreground/80 font-mono text-xs font-black">
+                                                                {formatChronometer(st.realTime || 0)}
+                                                            </span>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            )}
+
+                                                {/* Action Buttons (Edit + Delete) */}
+                                                <div className="flex items-center gap-0.5 md:border-l-2 md:border-foreground/5 md:pl-4">
+                                                    {!isLocked && st.status !== 'DONE' && (
+                                                        <>
+                                                            <button 
+                                                                onClick={() => { setEditingSubtaskId(st.id); setEditingTitle(st.title); }}
+                                                                className="size-8 flex items-center justify-center text-blue-500/50 hover:text-blue-500 hover:bg-blue-500/5 transition-all cursor-pointer"
+                                                            >
+                                                                <Pencil className="size-3.5" />
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => handleLocalDelete(st.id)}
+                                                                className="size-8 flex items-center justify-center text-red-500/40 hover:text-red-500 hover:bg-red-500/5 transition-all cursor-pointer"
+                                                            >
+                                                                <Trash2 className="size-3.5" />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                    
+                                                    {activeSpeedrunId === st.id && (
+                                                        <Button 
+                                                            size="sm" 
+                                                            className="rounded-none bg-green-500 hover:bg-green-600 text-[8px] font-black uppercase px-3 h-8 cursor-pointer shrink-0"
+                                                            onClick={() => handleCompleteSpeedrun(st.id)}
+                                                        >
+                                                            FINISH <CheckCircle2 className="size-3 ml-1" />
+                                                        </Button>
+                                                    )}
+
+                                                    {st.status === 'DONE' && (
+                                                        <div className="px-2 text-green-500">
+                                                            <CheckCircle2 className="size-4" />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 ))
                             )}
                         </div>
+                        </div>
+                        )}
                     </div>
                 </div>
 
                 {/* Tactical Sidebar */}
-                <div className="bg-muted/20 border-l-2 border-foreground/5 flex flex-col min-h-full">
+                <div className="bg-muted/20 border-l-2 border-foreground/5 flex flex-col">
                     
-                    {/* Telemetry Block */}
-                    <div className="p-6 border-b-2 border-foreground/5 bg-background">
-                        <div className="space-y-6">
-                            <div className="space-y-1">
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 flex items-center gap-2">
-                                    <Clock className={cn("size-3", isMasterActive && "text-primary animate-pulse")} /> 
-                                    Cronómetro de Ticket
-                                </span>
-                                <div className="flex flex-col">
-                                    <div className={cn(
-                                        "text-5xl font-mono font-black tracking-tighter tabular-nums leading-none",
-                                        isMasterActive ? "text-amber-400" : 
-                                        (ticket.status === 'DONE' || ticket.status === 'TESTING' || totalRealSeconds > 0) ? "text-foreground" :
-                                        "text-muted-foreground/20"
-                                    )}>
-                                        {formatChronometer(totalRealSeconds)}<MovingMilli active={isMasterActive} />
-                                    </div>
-
-                                    {(totalRealSeconds > 0 || isMasterActive) && (
-                                        <div className={cn(
-                                            "text-3xl font-mono font-black tracking-tight self-end mt-1 px-2 py-0.5",
-                                            totalRealSeconds <= totalEstimateSeconds ? "text-green-500 bg-green-500/5" : "text-red-500 bg-red-500/5 ripple-excess"
-                                        )}>
-                                            {totalRealSeconds <= totalEstimateSeconds ? "-" : "+"}
-                                            {formatChronometer(Math.abs(totalRealSeconds - totalEstimateSeconds))}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 gap-2">
-                                {!isMasterActive && ticket.status !== 'DONE' && ticket.status !== 'CANCELLED' && (
-                                    <Button 
-                                        onClick={handleMasterStart} 
-                                        className="h-14 rounded-none bg-primary text-primary-foreground font-black uppercase tracking-[0.2em] shadow-2xl shadow-primary/30 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-                                        disabled={isSyncing}
-                                    >
-                                        {(ticket.realTime || 0) > 0 || ticket.status === 'IN_PROGRESS' ? 'Reanudar Trabajo' : 'Iniciar Trabajo'}
-                                    </Button>
-                                )}
-                                {isMasterActive && (
-                                    <Button 
-                                        variant="outline"
-                                        onClick={handleMasterPause} 
-                                        className="h-12 rounded-none border-4 border-orange-500/50 text-orange-500 hover:bg-orange-500 hover:text-white font-black uppercase tracking-[0.2em] transition-all cursor-pointer"
-                                        disabled={isSyncing}
-                                    >
-                                        <PauseCircle className="size-5 mr-3" /> Pausar Tiempo
-                                    </Button>
-                                )}
-                                
-                                {isDirty && !isLocked && !isSyncing && (
-                                    <Button 
-                                        onClick={handleSync}
-                                        className="h-12 rounded-none bg-green-600 hover:bg-green-700 font-black uppercase tracking-widest animate-in fade-in zoom-in-95 duration-200 cursor-pointer"
-                                    >
-                                        Guardar Cambios
-                                    </Button>
-                                )}
-                                {isSyncing && (
-                                    <Button disabled className="h-12 rounded-none opacity-50 font-black uppercase tracking-widest">
-                                        <Loader2 className="size-4 animate-spin mr-3" /> Procesando
-                                    </Button>
-                                )}
-                            </div>
-                            
-                            {/* Cancellation Trigger */}
-                            {ticket.status !== 'DONE' && ticket.status !== 'CANCELLED' && (
-                                <button 
-                                    onClick={() => setShowCancelForm(!showCancelForm)}
-                                    className="w-full text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground/30 hover:text-red-500 transition-colors pt-2 cursor-pointer"
-                                >
-                                    Cancelar
-                                </button>
-                            )}
-                        </div>
-                    </div>
+                    {/* Operational Details */}
 
                     {/* Operational Details */}
                     <div className="p-6 flex-1 space-y-10 overflow-y-auto no-scrollbar">
@@ -954,22 +977,6 @@ export function TicketCard({
                     {/* Fixed Footer for Actions */}
                     <div className="mt-auto p-4 border-t-2 border-foreground/5 bg-background/50 backdrop-blur-md">
                         <div className="flex flex-col gap-2">
-                            {showCancelForm && (
-                                <div className="p-4 border-2 border-red-500/30 bg-red-500/5 space-y-4 mb-4 animate-in slide-in-from-bottom-2">
-                                     <span className="text-[10px] font-black uppercase tracking-widest text-red-500">Motivo de Cancelación</span>
-                                     <Textarea 
-                                        className="rounded-none bg-background border-2 border-red-500/20 text-xs focus-visible:ring-red-500 min-h-[80px]"
-                                        placeholder="Describa el fallo o cambio de prioridad..."
-                                        value={cancelReasonText}
-                                        onChange={(e) => setCancelReasonText(e.target.value)}
-                                     />
-                                     <div className="flex gap-2">
-                                        <Button variant="ghost" className="flex-1 rounded-none text-[10px] font-bold uppercase cursor-pointer" onClick={() => setShowCancelForm(false)}>Cerrar</Button>
-                                        <Button className="flex-1 rounded-none bg-red-600 hover:bg-red-700 text-[10px] font-black uppercase cursor-pointer" onClick={handleMasterCancel} disabled={!cancelReasonText.trim()}>Confirmar Cancelación</Button>
-                                     </div>
-                                </div>
-                            )}
-
                              {showCompletionForm && (
                                 <div className="p-4 border-2 border-green-500/30 bg-green-500/5 space-y-4 mb-4 animate-in slide-in-from-bottom-2">
                                      <span className="text-[10px] font-black uppercase tracking-widest text-green-600 flex items-center gap-2">
@@ -989,7 +996,7 @@ export function TicketCard({
                         </div>
                     </div>
                 </div>
+                </div>
             </div>
-        </div>
     );
 }

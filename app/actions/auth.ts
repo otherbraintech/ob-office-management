@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { AuthUser } from '@/lib/permissions';
+import bcrypt from 'bcryptjs';
 
 export async function login(formData: FormData) {
   const identifier = formData.get('identifier') as string;
@@ -20,7 +21,36 @@ export async function login(formData: FormData) {
       }
     });
 
-    if (user && user.password === password) {
+    if (!user) {
+      console.error("Credenciales inválidas");
+      return { error: "Credenciales inválidas" };
+    }
+
+    let isValid = false;
+    let needsHashing = false;
+
+    // Comprobamos si el hash guardado es válido
+    if (user.password) {
+       if (user.password.startsWith('$2')) {
+          isValid = await bcrypt.compare(password, user.password);
+       } else {
+          // Migración de legacy plain-text passwords
+          if (user.password === password) {
+             isValid = true;
+             needsHashing = true;
+          }
+       }
+    }
+
+    if (isValid) {
+      if (needsHashing) {
+         const hashedPassword = await bcrypt.hash(password, 10);
+         await prisma.user.update({
+             where: { id: user.id },
+             data: { password: hashedPassword }
+         });
+      }
+
       const cookieStore = await cookies();
       
       const sessionUser: AuthUser = {
@@ -69,12 +99,14 @@ export async function signup(formData: FormData) {
       return { error: "El email o nombre de usuario ya está en uso" };
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const user = await prisma.user.create({
       data: {
         name,
         username,
         email,
-        password, // Nota: En producción, hashear la contraseña
+        password: hashedPassword,
         role: 'DEVELOPER'
       }
     });
@@ -102,11 +134,29 @@ export async function signup(formData: FormData) {
   }
 }
 
-export async function updateProfile(userId: string, data: { name?: string, username?: string, image?: string }) {
+export async function updateProfile(userId: string, data: { name?: string, username?: string, image?: string, password?: string }) {
   try {
+    let updateData: any = {
+      name: data.name,
+      username: data.username,
+      image: data.image
+    };
+
+    if (data.password && data.password.trim().length > 0) {
+      updateData.password = await bcrypt.hash(data.password, 10);
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data
+      data: updateData,
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        email: true,
+        role: true,
+        image: true
+      }
     });
 
     const cookieStore = await cookies();
@@ -143,15 +193,27 @@ export async function getSession() {
   const session = cookieStore.get('session');
   if (!session || !session.value) return null;
   try {
-    // Si la cookie empieza por "ey" es un JWT de alguna sesión previa (de otro proyecto tal vez).
-    // Nuestra sesión es JSON stringificado, así que ignoraremos y borraremos si no es JSON válido.
+    // Si la cookie empieza por "ey" es un JWT de alguna sesión previa.
     if (session.value.startsWith('ey')) {
-      console.warn("Invalid session cookie detected (JWT format instead of JSON). Clearing cookie.");
+      console.warn("Invalid session cookie detected (JWT format instead of JSON).");
       return null;
     }
-    return JSON.parse(session.value);
+    const parsedSession = JSON.parse(session.value);
+    
+    // Auto-sync de rol con la DB para que no haya que re-logearse al cambiar rangos
+    const dbUser = await prisma.user.findUnique({
+      where: { id: parsedSession.id },
+      select: { role: true }
+    });
+    
+    if (dbUser && dbUser.role !== parsedSession.role) {
+       parsedSession.role = dbUser.role;
+    }
+
+    return parsedSession;
   } catch (error) {
     console.error("Failed to parse session cookie:", error);
     return null;
   }
 }
+

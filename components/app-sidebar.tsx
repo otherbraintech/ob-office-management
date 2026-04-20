@@ -52,49 +52,43 @@ const navItems = [
       title: "Panel de Control",
       url: "/dashboard",
       icon: <LayoutDashboard />,
-      roles: ["CEO", "DEVELOPER", "INTERN", "EXTERNAL_CLIENT"]
+      roles: ["CEO", "DEVELOPER", "INTERN", "EXTERNAL_CLIENT", "ADMIN_DEV"]
     },
     {
-      title: "Asistente IA",
+      title: "Crear Ticket con IA",
       url: "/ai-assistant",
       icon: <Sparkles />,
-      roles: ["CEO", "DEVELOPER", "INTERN", "EXTERNAL_CLIENT"]
+      roles: ["CEO", "DEVELOPER", "INTERN", "EXTERNAL_CLIENT", "ADMIN_DEV"]
     },
     {
-      title: "Requerimientos",
-      url: "#",
+      title: "Tickets Creados",
+      url: "/tickets",
       icon: <Ticket />,
-      roles: ["CEO", "DEVELOPER", "INTERN", "EXTERNAL_CLIENT"],
-      items: [
-         { title: "Portal de Cliente", url: "/tickets/me", roles: ["EXTERNAL_CLIENT"] },
-         { title: "Mis Tareas Asignadas", url: "/tickets/me", roles: ["CEO", "DEVELOPER", "INTERN"] },
-         { title: "Tablero de Lista", url: "/tickets", roles: ["CEO", "DEVELOPER", "INTERN"] },
-         { title: "Kanban General", url: "/kanban", roles: ["CEO", "DEVELOPER", "INTERN"] }
-      ]
+      roles: ["CEO", "DEVELOPER", "INTERN", "EXTERNAL_CLIENT", "ADMIN_DEV"]
     },
     {
       title: "Control de Tiempos",
       url: "/time-tracking",
       icon: <Timer />,
-      roles: ["CEO", "DEVELOPER", "INTERN"]
+      roles: ["CEO", "DEVELOPER", "INTERN", "ADMIN_DEV"]
     },
     {
       title: "Proyectos",
       url: "/projects",
       icon: <Briefcase />,
-      roles: ["CEO", "DEVELOPER", "INTERN"]
+      roles: ["CEO", "DEVELOPER", "INTERN", "ADMIN_DEV"]
     },
     {
       title: "Equipo",
       url: "/team",
       icon: <Users />,
-      roles: ["CEO", "DEVELOPER", "INTERN"]
+      roles: ["CEO", "DEVELOPER", "INTERN", "ADMIN_DEV"]
     },
     {
       title: "Finanzas",
       url: "/finances",
       icon: <Wallet />,
-      roles: ["CEO"],
+      roles: ["CEO", "ADMIN_DEV"],
       items: [
          { title: "Resumen Total", url: "/finances" },
          { title: "Gastos (Expenses)", url: "/finances/expenses" },
@@ -105,19 +99,19 @@ const navItems = [
       title: "Analíticas",
       url: "/analytics",
       icon: <LayoutDashboard />,
-      roles: ["CEO"]
+      roles: ["CEO", "ADMIN_DEV"]
     },
     {
       title: "Guía de Estructura",
       url: "/help",
       icon: <HelpCircle />,
-      roles: ["CEO", "DEVELOPER", "INTERN", "EXTERNAL_CLIENT"]
+      roles: ["CEO", "DEVELOPER", "INTERN", "EXTERNAL_CLIENT", "ADMIN_DEV"]
     },
     {
       title: "Configuración",
       url: "/settings",
       icon: <Settings2 />,
-      roles: ["CEO"],
+      roles: ["CEO", "ADMIN_DEV"],
       items: [
          { title: "General", url: "/settings" },
          { title: "Seguridad y Accesos", url: "/settings/security" }
@@ -135,7 +129,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const filteredNavMain = navItems
       .filter((item) => {
         if (!user) return false;
-        return item.roles.includes(user.role);
+        return item.roles.includes(user.role as any);
       })
       .map((item) => {
         if (item.items) {

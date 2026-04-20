@@ -11,6 +11,7 @@ enum Role {
   DEVELOPER
   INTERN
   EXTERNAL_CLIENT
+  ADMIN_DEV
 }
 
 enum TicketStatus {
@@ -107,22 +108,22 @@ model Ticket {
   lead          User?   @relation("TicketLead", fields: [leadId], references: [id])
   collaborators User[]  @relation("TicketCollaborators")
 
-  estimatedTime Int           @default(0) // En minutos
-  realTime      Int           @default(0) // En segundos, acumulado histórico
-  
+  estimatedTime Int @default(0) // En minutos
+  realTime      Int @default(0) // En segundos, acumulado histórico
+
   // Telemetría de ejecución en vivo
-  isActive      Boolean       @default(false)
+  isActive      Boolean   @default(false)
   lastStartedAt DateTime?
 
   // Comentarios de cierre
   cancelReason      String?
   completionComment String?
 
-  workSessions  WorkSession[]
+  workSessions WorkSession[]
 
   subtasks  Subtask[]
   comments  Comment[]
-  order     Int           @default(0)
+  order     Int       @default(0)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -133,12 +134,12 @@ model Subtask {
   status        SubtaskStatus @default(TODO)
   estimatedTime Int // En minutos
   realTime      Int           @default(0) // En segundos, acumulado histórico
-  
+
   // Telemetría de ejecución en vivo
-  isActive      Boolean       @default(false)
+  isActive      Boolean   @default(false)
   lastStartedAt DateTime?
 
-  order         Int           @default(0)
+  order Int @default(0)
 
   ticketId String
   ticket   Ticket @relation(fields: [ticketId], references: [id])
@@ -160,8 +161,8 @@ model WorkSession {
   userId String
   user   User   @relation(fields: [userId], references: [id])
 
-  ticketId  String?
-  ticket    Ticket?  @relation(fields: [ticketId], references: [id])
+  ticketId String?
+  ticket   Ticket? @relation(fields: [ticketId], references: [id])
 
   subtaskId String?
   subtask   Subtask? @relation(fields: [subtaskId], references: [id])

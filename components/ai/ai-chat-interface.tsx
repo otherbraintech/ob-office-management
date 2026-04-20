@@ -228,9 +228,9 @@ export function AIChatInterface({
   };
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-background">
+    <div className="flex h-full w-full overflow-hidden bg-background flex-col md:flex-row">
       {/* Sidebar de Historial */}
-      <div className="w-1/4 min-w-[250px] border-r flex flex-col bg-muted/10">
+      <div className="w-full md:w-1/4 md:min-w-[280px] border-r flex flex-col bg-muted/10 shrink-0">
         <div className="p-4 border-b">
            <Button onClick={handleNewChat} className="w-full justify-start rounded-none font-bold" variant="outline">
               <Plus className="mr-2 h-4 w-4" /> Nuevo Chat
@@ -272,8 +272,8 @@ export function AIChatInterface({
            </div>
         </div>
 
-        <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-          <div className="flex flex-col gap-6 max-w-3xl mx-auto pb-4">
+        <ScrollArea className="flex-1 px-4" ref={scrollRef}>
+          <div className="flex flex-col gap-4 max-w-3xl mx-auto py-4">
             {messages.map((msg, i) => {
                const { text, proposal } = parseContent(msg.content);
                const isAssistant = msg.role === 'assistant' || msg.role === 'system';
@@ -284,7 +284,7 @@ export function AIChatInterface({
                      {isAssistant ? <BotIcon size={16} /> : <UserIcon size={16} />}
                   </div>
                   <div className={`flex flex-col gap-2 max-w-[85%] ${isAssistant ? 'items-start' : 'items-end'}`}>
-                     <div className={`p-4 rounded-none border whitespace-pre-wrap text-sm ${isAssistant ? 'bg-background border-foreground/10 shadow-sm' : 'bg-muted/50 border-transparent text-foreground'}`}>
+                     <div className={`p-3 rounded-none border whitespace-pre-wrap text-[13px] leading-relaxed ${isAssistant ? 'bg-background border-foreground/10 shadow-sm' : 'bg-primary/20 border-transparent text-foreground'}`}>
                         {text.trim()}
                      </div>
 
@@ -367,7 +367,7 @@ export function AIChatInterface({
           </div>
         </ScrollArea>
 
-        <div className="p-4 bg-background/80 backdrop-blur-sm border-t border-foreground/5 shrink-0">
+        <div className="p-3 bg-background/80 backdrop-blur-sm border-t border-foreground/5 shrink-0">
           <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex gap-2 max-w-3xl mx-auto relative">
             <Input 
                disabled={loading}

@@ -34,13 +34,13 @@ export default async function AIAssistantPage({ searchParams }: { searchParams: 
   const initialConversations = convsResult.data || [];
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] p-4 md:p-8">
-      <div className="flex flex-col gap-2 mb-4 shrink-0">
-        <h1 className="text-3xl font-bold tracking-tight">Crea tu ticket con IA</h1>
-        <p className="text-muted-foreground">Tu asistente personal para estructurar requerimientos, estimar tiempos y organizar el trabajo de forma automática.</p>
+    <div className="flex flex-col h-[calc(100vh-6rem)] p-2 overflow-hidden">
+      <div className="flex flex-col gap-1 mb-4 shrink-0 px-2">
+        <h1 className="text-4xl font-black tracking-tighter uppercase leading-none">Crear ticket con IA</h1>
+        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Tu asistente personal para estructurar requerimientos, estimar tiempos y organizar el trabajo de forma automática.</p>
       </div>
 
-      <div className="flex-1 min-h-0 bg-background border rounded-lg shadow-sm overflow-hidden flex flex-col">
+      <div className="flex-1 min-h-0 bg-background border-2 border-foreground/5 rounded-none shadow-none overflow-hidden flex flex-col">
           <Suspense fallback={<div className="flex-1 flex items-center justify-center">Cargando asistente...</div>}>
             <AIChatInterface 
                 availableModules={modules} 

@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "./auth";
 import { can } from "@/lib/permissions";
+import bcrypt from "bcryptjs";
 
 export async function getTeamData() {
     const session = await getSession();
@@ -55,7 +56,9 @@ export async function getTeamData() {
 
         return {
             id: user.id,
-            name: user.name || user.username || user.email,
+            displayName: user.name || user.username || user.email,
+            name: user.name,
+            username: user.username,
             email: user.email,
             role: user.role,
             avatar: user.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
@@ -67,4 +70,40 @@ export async function getTeamData() {
             }
         };
     });
+}
+export async function updateUserAdmin(userId: string, data: any) {
+    const session = await getSession();
+    if (!session) throw new Error("Unauthorized");
+
+    // Verificar permisos
+    if (!can(session, "update", "User")) {
+        throw new Error("No tienes permisos suficientes para gestionar usuarios.");
+    }
+
+    let updateData: any = {
+        name: data.name,
+        username: data.username,
+        email: data.email,
+        role: data.role,
+        image: data.image
+    };
+
+    if (data.password && data.password.trim().length > 0) {
+        updateData.password = await bcrypt.hash(data.password, 10);
+    }
+
+    const updated = await prisma.user.update({
+        where: { id: userId },
+        data: updateData,
+        select: {
+            id: true,
+            name: true,
+            username: true,
+            email: true,
+            role: true,
+            image: true
+        }
+    });
+
+    return updated;
 }

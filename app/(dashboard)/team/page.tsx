@@ -15,13 +15,18 @@ import {
     Mail,
     ChevronRight,
     Search,
-    Plus
+    Plus,
+    Lock
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, translateRole } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { getSession } from "@/app/actions/auth";
+import { UserEditDialog } from "./user-edit-dialog";
 
 export default async function TeamsPage() {
     const team = await getTeamData();
+    const session = await getSession();
+    const isAdmin = session?.role === 'CEO' || session?.role === 'ADMIN_DEV';
 
     return (
         <div className="flex flex-col gap-10 p-4 md:p-10 max-w-[1700px] mx-auto min-h-screen bg-background/50 animate-in fade-in duration-1000">
@@ -43,16 +48,18 @@ export default async function TeamsPage() {
                         </div>
                     </div>
                     <p className="text-sm text-muted-foreground font-bold max-w-2xl leading-relaxed uppercase tracking-tight opacity-70">
-                        CEO y Personal Operativo de la empresa.
+                        {isAdmin ? 'Módulo de Gestión de Recursos Humanos y Personal Operativo.' : 'Personal Operativo y Directivo de la organización.'}
                     </p>
                 </div>
                 
-                <div className="relative group min-w-[320px]">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
-                    <input 
-                        className="w-full bg-muted/20 border-2 border-foreground/5 h-12 pl-12 pr-4 text-[10px] font-black uppercase tracking-widest focus:border-primary focus:bg-background outline-none transition-all rounded-none"
-                        placeholder="Buscar por nombre..."
-                    />
+                <div className="flex items-center gap-4">
+                    <div className="relative group min-w-[320px]">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
+                        <input 
+                            className="w-full bg-muted/20 border-2 border-foreground/5 h-12 pl-12 pr-4 text-[10px] font-black uppercase tracking-widest focus:border-primary focus:bg-background outline-none transition-all rounded-none"
+                            placeholder="Buscar por nombre..."
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -61,23 +68,31 @@ export default async function TeamsPage() {
                 {team.map((user) => (
                     <Card key={user.id} className="rounded-none border-2 border-foreground/5 bg-background shadow-none hover:border-primary/40 transition-all group overflow-hidden relative">
                         {/* Background Decoration */}
-                        <div className="absolute top-0 right-0 p-1 opacity-[0.03] group-hover:opacity-10 transition-opacity">
-                             <Layers className="size-32 -mr-10 -mt-10 rotate-12" />
+                        <div className="absolute top-0 right-0 p-1 opacity-[0.03] group-hover:opacity-10 transition-opacity pointer-events-none">
+                            {user.role === 'CEO' && <ShieldCheck className="size-40 -mr-12 -mt-12 -rotate-12" />}
+                            {(user.role === 'ADMIN_DEV' || user.role === 'DEVELOPER') && <Code2 className="size-40 -mr-12 -mt-12 -rotate-12" />}
+                            {user.role === 'INTERN' && <Zap className="size-40 -mr-12 -mt-12 -rotate-12" />}
+                            {user.role === 'EXTERNAL_CLIENT' && <Briefcase className="size-40 -mr-12 -mt-12 -rotate-12" />}
                         </div>
 
                         <CardHeader className="space-y-6 pb-4 relative z-10">
                             <div className="flex justify-between items-start">
                                 <Avatar className="size-20 rounded-none border-2 border-foreground/5 p-1 bg-muted/30 group-hover:border-primary/20 transition-all">
                                     <AvatarImage src={user.avatar} className="rounded-none" />
-                                    <AvatarFallback className="rounded-none font-black text-xl">{user.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                                    <AvatarFallback className="rounded-none font-black text-xl">{user.displayName?.slice(0, 2).toUpperCase() || 'U'}</AvatarFallback>
                                 </Avatar>
-                                <div className="flex flex-col items-end gap-1.5">
-                                    <Badge variant="outline" className={cn(
-                                        "rounded-none text-[8px] font-black tracking-widest uppercase border-2 px-2 h-5",
-                                        user.role === 'CEO' ? 'bg-primary/10 border-primary/40 text-primary' : 'bg-muted/10 border-foreground/5 text-muted-foreground'
-                                    )}>
-                                        {user.role}
-                                    </Badge>
+                                <div className="flex flex-col items-end gap-1.5 font-black uppercase">
+                                    <div className="flex items-center gap-2">
+                                        {isAdmin && (
+                                            <UserEditDialog user={user} />
+                                        )}
+                                        <Badge variant="outline" className={cn(
+                                            "rounded-none text-[8px] font-black tracking-widest uppercase border-2 px-2 h-6 flex items-center",
+                                            user.role === 'CEO' || user.role === 'ADMIN_DEV' ? 'bg-primary/10 border-primary/40 text-primary' : 'bg-muted/10 border-foreground/5 text-muted-foreground'
+                                        )}>
+                                            {translateRole(user.role)}
+                                        </Badge>
+                                    </div>
                                     <div className="flex items-center gap-1.5 pt-1">
                                          <div className="size-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
                                          <span className="text-[8px] font-bold uppercase text-muted-foreground opacity-60">Estado: Activo</span>
@@ -87,7 +102,7 @@ export default async function TeamsPage() {
                             
                             <div className="space-y-1">
                                 <h3 className="text-xl font-black uppercase tracking-tighter group-hover:text-primary transition-colors">
-                                    {user.name}
+                                    {user.displayName}
                                 </h3>
                                 <div className="flex items-center gap-2 text-muted-foreground opacity-50 group-hover:opacity-100 transition-opacity">
                                     <Mail className="size-3" />
@@ -155,18 +170,30 @@ export default async function TeamsPage() {
                     </Card>
                 ))}
 
-                {/* Invite Node CTA */}
-                <div className="border-4 border-dashed border-foreground/5 rounded-none p-10 text-center flex flex-col items-center justify-center gap-6 group hover:border-primary/20 hover:bg-primary/5 transition-all cursor-pointer">
-                    <div className="size-20 bg-muted/20 border-2 border-foreground/10 rounded-none flex items-center justify-center group-hover:scale-110 group-hover:rotate-90 transition-all duration-700">
-                        <Plus className="size-10 text-muted-foreground/40 group-hover:text-primary transition-colors" />
+                {/* Invite Node CTA - Only for Admins */}
+                {isAdmin ? (
+                    <div className="border-4 border-dashed border-foreground/5 rounded-none p-10 text-center flex flex-col items-center justify-center gap-6 group hover:border-primary/20 hover:bg-primary/5 transition-all cursor-pointer">
+                        <div className="size-20 bg-muted/20 border-2 border-foreground/10 rounded-none flex items-center justify-center group-hover:scale-110 group-hover:rotate-90 transition-all duration-700">
+                            <Plus className="size-10 text-muted-foreground/40 group-hover:text-primary transition-colors" />
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Invitar Nuevo Miembro</p>
+                            <p className="text-[9px] font-bold uppercase tracking-tighter text-muted-foreground/30 px-6 leading-relaxed">
+                                Agrega un nuevo integrante al equipo operativo de OtherBrain.
+                            </p>
+                        </div>
                     </div>
-                    <div className="space-y-2">
-                        <p className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Invitar Nuevo Miembro</p>
-                        <p className="text-[9px] font-bold uppercase tracking-tighter text-muted-foreground/30 px-6 leading-relaxed">
-                            Agrega un nuevo integrante al equipo operativo de OtherBrain.
-                        </p>
+                ) : (
+                    <div className="border-2 border-foreground/5 rounded-none p-10 text-center flex flex-col items-center justify-center gap-6 opacity-40 grayscale">
+                        <Lock className="size-10 text-muted-foreground/20" />
+                        <div className="space-y-2">
+                            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Acceso Restringido</p>
+                            <p className="text-[8px] font-bold uppercase tracking-tighter text-muted-foreground/50 px-6">
+                                Solo personal con rango ADMIN_DEV puede gestionar reclutamiento.
+                            </p>
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );

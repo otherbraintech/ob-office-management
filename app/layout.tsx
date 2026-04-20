@@ -8,8 +8,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "OB-Workspace",
-  description: "Sistema integral de gestión de oficina",
+  title: "OB Workspace",
+  description: "Sistema integral de gestión del trabajo interno de OtherBrain S.R.L.",
 };
 
 import { TooltipProvider } from "@/components/ui/tooltip";

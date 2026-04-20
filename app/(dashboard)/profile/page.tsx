@@ -61,31 +61,49 @@ export default async function ProfilePage() {
         .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
 
     return (
-        <div className="p-8 max-w-7xl mx-auto space-y-12">
-            <div>
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold tracking-tight">Mi Perfil</h1>
-                    <p className="text-muted-foreground mt-2">Gestiona tu identidad en el sistema y revisa tu rendimiento operativo.</p>
-                </div>
-
-                <div className="bg-background border-2 border-foreground/5 p-8">
-                    <ProfileForm user={{
-                        id: user.id,
-                        name: user.name,
-                        username: user.username,
-                        image: user.image,
-                        role: user.role,
-                        email: user.email
-                    }} />
-                </div>
+        <div className="min-h-screen bg-background pb-20">
+            {/* Header / Cover Section */}
+            <div className="h-48 md:h-72 bg-muted relative overflow-hidden">
+                {/* Dynamic pattern background */}
+                <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_30%_50%,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
+                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
             </div>
 
-            <div className="pt-8 border-t-2 border-foreground/5">
-                <ProfileHistory 
-                    totalHours={totalHours} 
-                    manHoursCompleted={manHoursCompleted}
-                    tickets={allTickets} 
-                />
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24 relative z-10">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Left Column: Profile Card & Basic Info */}
+                    <div className="lg:col-span-4 space-y-6">
+                        <div className="bg-background border-2 border-foreground/5 shadow-2xl overflow-hidden">
+                            <ProfileForm user={{
+                                id: user.id,
+                                name: user.name,
+                                username: user.username,
+                                image: user.image,
+                                role: user.role,
+                                email: user.email
+                            }} />
+                        </div>
+                    </div>
+
+                    {/* Right Column: Performance & History */}
+                    <div className="lg:col-span-8 space-y-8">
+                        <div className="bg-background/50 backdrop-blur-sm border-2 border-foreground/5 p-6 md:p-8">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                                <div>
+                                    <h2 className="text-2xl font-black uppercase tracking-tighter">Centro de Operaciones</h2>
+                                    <p className="text-muted-foreground text-sm font-medium uppercase tracking-widest mt-1">Métricas de rendimiento y registro de actividad</p>
+                                </div>
+                            </div>
+                            
+                            <ProfileHistory 
+                                totalHours={totalHours} 
+                                manHoursCompleted={manHoursCompleted}
+                                tickets={allTickets} 
+                            />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
