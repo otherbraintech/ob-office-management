@@ -52,7 +52,7 @@ export default async function AnalyticsPage() {
   const subtaskProgress = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0;
 
   // Developer productivity: completed subtasks per user
-  const developerProductivity = users.map(user => ({
+  const developerProductivity = users.map((user: any) => ({
     name: user.name || user.email,
     completed: user.assignedSubtasks.length
   })).sort((a, b) => b.completed - a.completed);
@@ -122,7 +122,7 @@ export default async function AnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-6 mt-4">
-              {developerProductivity.map((dev, idx) => (
+              {developerProductivity.map((dev: any, idx: number) => (
                 <div key={idx} className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium">{dev.name}</span>
@@ -152,7 +152,7 @@ export default async function AnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {Object.entries(statsByStatus).map(([status, count]) => (
+              {Object.entries(statsByStatus).map(([status, count]: any) => (
                 <div key={status} className="flex items-center justify-between">
                   <Badge variant="outline" className="capitalize">
                     {status.replace('_', ' ').toLowerCase()}
@@ -182,7 +182,7 @@ export default async function AnalyticsPage() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {projects.map((project) => {
+            {projects.map((project: any) => {
               const projectTickets = project.modules.flatMap(m => m.tickets);
               const projCompleted = projectTickets.filter((t: any) => t.status === 'DONE').length;
               const projProgress = projectTickets.length > 0 ? (projCompleted / projectTickets.length) * 100 : 0;
