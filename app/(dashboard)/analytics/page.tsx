@@ -29,18 +29,18 @@ export default async function AnalyticsPage() {
 
   // Status breakdown
   const statsByStatus = {
-    BACKLOG: tickets.filter(t => t.status === 'BACKLOG').length,
-    IN_PROGRESS: tickets.filter(t => t.status === 'IN_PROGRESS').length,
-    REVIEW: tickets.filter(t => t.status === 'REVIEW').length,
-    DONE: tickets.filter(t => t.status === 'DONE').length,
+    BACKLOG: tickets.filter((t: any) => t.status === 'BACKLOG').length,
+    IN_PROGRESS: tickets.filter((t: any) => t.status === 'IN_PROGRESS').length,
+    REVIEW: tickets.filter((t: any) => t.status === 'REVIEW').length,
+    DONE: tickets.filter((t: any) => t.status === 'DONE').length,
   };
 
   // Priority breakdown
   const statsByPriority = {
-    LOW: tickets.filter(t => t.priority === 'LOW').length,
-    MEDIUM: tickets.filter(t => t.priority === 'MEDIUM').length,
-    HIGH: tickets.filter(t => t.priority === 'HIGH').length,
-    URGENT: tickets.filter(t => t.priority === 'URGENT').length,
+    LOW: tickets.filter((t: any) => t.priority === 'LOW').length,
+    MEDIUM: tickets.filter((t: any) => t.priority === 'MEDIUM').length,
+    HIGH: tickets.filter((t: any) => t.priority === 'HIGH').length,
+    URGENT: tickets.filter((t: any) => t.priority === 'URGENT').length,
   };
 
   const totalTickets = tickets.length;
@@ -48,7 +48,7 @@ export default async function AnalyticsPage() {
   const completionRate = totalTickets > 0 ? (completedTickets / totalTickets) * 100 : 0;
 
   const totalSubtasks = subtasks.length;
-  const completedSubtasks = subtasks.filter(s => s.status === 'DONE').length;
+  const completedSubtasks = subtasks.filter((s: any) => s.status === 'DONE').length;
   const subtaskProgress = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0;
 
   // Developer productivity: completed subtasks per user
@@ -184,7 +184,7 @@ export default async function AnalyticsPage() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {projects.map((project) => {
               const projectTickets = project.modules.flatMap(m => m.tickets);
-              const projCompleted = projectTickets.filter(t => t.status === 'DONE').length;
+              const projCompleted = projectTickets.filter((t: any) => t.status === 'DONE').length;
               const projProgress = projectTickets.length > 0 ? (projCompleted / projectTickets.length) * 100 : 0;
 
               return (

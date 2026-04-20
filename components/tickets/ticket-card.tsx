@@ -655,36 +655,36 @@ export function TicketCard({
 
                                 {/* Add Subtask Inline Form */}
                                 {isAddingSubtask && (
-                            <div className="p-6 bg-primary/5 border-2 border-primary/20 space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
-                                <div className="flex gap-4">
-                                    <Input 
-                                        placeholder="Título de la tarea..." 
-                                        className="rounded-none bg-background border-2 border-foreground/10 font-bold focus-visible:ring-primary"
-                                        value={newSubtaskTitle}
-                                        onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                                        onKeyDown={(e) => e.key === 'Enter' && handleAddNewSubtask()}
-                                    />
-                                    <Button onClick={handleAISuggest} disabled={isAILoading} size="icon" className="shrink-0 size-11 rounded-none bg-primary hover:bg-primary/80">
-                                        {isAILoading ? <Loader2 className="size-5 animate-spin" /> : <Sparkles className="size-5" />}
-                                    </Button>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Tiempo Estimado (minutos):</span>
-                                        <Input 
-                                            type="number" 
-                                            className="w-20 rounded-none h-8 text-xs font-black border-2 border-foreground/10"
-                                            value={newSubtaskTime}
-                                            onChange={(e) => setNewSubtaskTime(parseInt(e.target.value))}
-                                        />
+                                    <div className="p-6 bg-primary/5 border-2 border-primary/20 space-y-4 animate-in fade-in slide-in-from-top-4 duration-300 shadow-xl shadow-primary/5">
+                                        <div className="flex gap-4">
+                                            <Input 
+                                                placeholder="Título de la tarea..." 
+                                                className="rounded-none bg-background border-2 border-foreground/10 font-bold focus-visible:ring-primary"
+                                                value={newSubtaskTitle}
+                                                onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                                                onKeyDown={(e) => e.key === 'Enter' && handleAddNewSubtask()}
+                                            />
+                                            <Button onClick={handleAISuggest} disabled={isAILoading} size="icon" className="shrink-0 size-11 rounded-none bg-primary hover:bg-primary/80">
+                                                {isAILoading ? <Loader2 className="size-5 animate-spin" /> : <Sparkles className="size-5" />}
+                                            </Button>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Tiempo Estimado (minutos):</span>
+                                                <Input 
+                                                    type="number" 
+                                                    className="w-20 rounded-none h-8 text-xs font-black border-2 border-foreground/10"
+                                                    value={newSubtaskTime}
+                                                    onChange={(e) => setNewSubtaskTime(parseInt(e.target.value))}
+                                                />
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <Button variant="ghost" size="sm" className="font-bold text-[10px] uppercase cursor-pointer" onClick={() => setIsAddingSubtask(false)}>Cancelar</Button>
+                                                <Button size="sm" className="rounded-none font-black text-[10px] uppercase px-8 cursor-pointer" onClick={handleAddNewSubtask}>Confirmar</Button>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="flex gap-2">
-                                        <Button variant="ghost" size="sm" className="font-bold text-[10px] uppercase cursor-pointer" onClick={() => setIsAddingSubtask(false)}>Cancelar</Button>
-                                        <Button size="sm" className="rounded-none font-black text-[10px] uppercase px-8 cursor-pointer" onClick={handleAddNewSubtask}>Confirmar</Button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+                                )}
 
                         {/* Subtasks List */}
                         <div className="space-y-3 relative">
@@ -881,11 +881,9 @@ export function TicketCard({
                 </div>
 
                 {/* Tactical Sidebar */}
-                <div className="bg-muted/20 border-l-2 border-foreground/5 flex flex-col">
+                <div className="bg-muted/20 border-l-2 border-foreground/5 flex flex-col min-h-full">
                     
-                    {/* Operational Details */}
-
-                    {/* Operational Details */}
+                    {/* Operational Details (Scrollable) */}
                     <div className="p-6 flex-1 space-y-10 overflow-y-auto no-scrollbar">
                         
                         {/* Team Section */}
@@ -993,10 +991,9 @@ export function TicketCard({
                                      </Button>
                                 </div>
                             )}
-                        </div>
                     </div>
                 </div>
-                </div>
             </div>
+        </div>
     );
 }
