@@ -55,7 +55,7 @@ export default async function AnalyticsPage() {
   const developerProductivity = users.map((user: any) => ({
     name: user.name || user.email,
     completed: user.assignedSubtasks.length
-  })).sort((a, b) => b.completed - a.completed);
+  })).sort((a: any, b: any) => b.completed - a.completed);
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 md:p-8">
