@@ -994,6 +994,7 @@ export function TicketCard({
                     </div>
                 </div>
             </div>
+            </div>
         </div>
     );
 }
