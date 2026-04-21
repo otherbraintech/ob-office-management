@@ -22,7 +22,7 @@ export async function uploadToObFile(formData: FormData) {
         const filename = file.name;
         const mimeType = file.type;
 
-        const response = await fetch('https://otherbrain-tech-OBFILEs-oficial.ddt6vc.easypanel.host/api/upload', {
+        const response = await fetch('https://otherbrain-tech-ob-files-oficial.ddt6vc.easypanel.host/api/upload', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
