@@ -6,14 +6,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { SendIcon, BotIcon, UserIcon, Loader2, Sparkles, CheckCircle2, Plus, MessageSquare, Mic, MicOff, History, ChevronLeft, ChevronRight, Pencil, Check, X } from 'lucide-react';
-import { aiChat, createTicketFromAI, addAiMessage, createAiConversation, getAiConversationMessages, updateAiConversationTitle } from '@/app/actions/ai';
+import { SendIcon, BotIcon, UserIcon, Loader2, Sparkles, CheckCircle2, Plus, MessageSquare, Mic, MicOff, History, ChevronLeft, ChevronRight, Pencil, Check, X, Volume2, VolumeX } from 'lucide-react';
+import { aiChat, createTicketFromAI, addAiMessage, createAiConversation, getAiConversationMessages, updateAiConversationTitle, aiGenerateSpeech } from '@/app/actions/ai';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useSidebar } from '@/components/ui/sidebar';
+import { toast } from 'sonner';
 
 export function AIChatInterface({ 
   availableModules, 
@@ -47,8 +48,8 @@ export function AIChatInterface({
   const [greeted, setGreeted] = useState(false);
   const [displayedGreeting, setDisplayedGreeting] = useState('');
   const fullGreeting = contextProject 
-    ? `¡Hola! Veo que estás trabajando en el proyecto "${contextProject.name}". Cuéntame qué necesitas añadir y te ayudaré a estructurarlo.` 
-    : '¡Hola! Soy tu Asistente IA. Cuéntame sobre lo que necesitas y te guiaré para crear y detallar tu requerimiento en el sistema.';
+    ? `¡Hola! Veo que estás en "${contextProject.name}". Dime qué necesitas y lo estructuro en un toque. O si prefieres, cuéntame algo más interesante... 😏` 
+    : '¡Hola! Soy Vanessa. Cuéntame qué quieres hacer hoy en el sistema... o simplemente distrápeme un rato. Tú decides. 😉';
 
   useEffect(() => {
     if (!currentConvId && !greeted) {
@@ -188,7 +189,7 @@ export function AIChatInterface({
         handleSend(prompt);
       }, 100);
     }
-  }, [searchParams]); // Quitar 'conversations' de aquí
+  }, [searchParams]);
 
   const handleNewChat = () => {
     setCurrentConvId(null);
@@ -196,6 +197,83 @@ export function AIChatInterface({
   };
 
   const isSending = useRef(false);
+  const [isSpeaking, setIsSpeaking] = useState<number | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const handleSpeak = async (text: string, index: number) => {
+    if (typeof window === 'undefined') return;
+    
+    if (isSpeaking === index) {
+      if (audioRef.current) {
+         audioRef.current.pause();
+         audioRef.current = null;
+      }
+      window.speechSynthesis.cancel();
+      setIsSpeaking(null);
+      return;
+    }
+
+    if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    
+    setIsSpeaking(index);
+
+    try {
+      const res = await aiGenerateSpeech(text);
+      if (res.data) {
+        const audio = new Audio(`data:audio/mp3;base64,${res.data}`);
+        audioRef.current = audio;
+        audio.onended = () => setIsSpeaking(null);
+        await audio.play();
+        return;
+      } else if (res.error) {
+        // Log para debug si falla la IA
+        console.warn("AI TTS Mode failed:", res.error);
+      }
+    } catch (e) {
+      console.warn("AI TTS failed, falling back to browser TTS", e);
+    }
+
+    // FALLBACK: Browser TTS - MODO ANTI-ABUELA
+    const cleanText = text.replace(/```JSON_PROPOSAL[\s\S]*?```/g, '').trim();
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = 'es-ES';
+    utterance.rate = 0.9;
+    utterance.pitch = 1.0;
+
+    const voices = window.speechSynthesis.getVoices();
+    
+    // 💡 Debug: Ver qué voces tienes realmente
+    console.log("Voces disponibles en tu sistema:", voices.map(v => v.name));
+
+    // Lista negra: voces que suenan a "abuela" o robot viejo
+    const blackList = ['Sabina', 'Helena', 'Zira', 'Hilda', 'Traditional'];
+    
+    // Buscamos la mejor voz posible: 
+    // 1. Natural (Aria/Edge), 2. Google (Chrome), 3. Cualquier mujer que no esté en la blacklist
+    const bestVoices = voices.filter(v => 
+      v.lang.startsWith('es') && 
+      !blackList.some(b => v.name.includes(b))
+    );
+
+    const naturalVoice = bestVoices.find(v => v.name.includes('Natural') || v.name.includes('Online'));
+    const googleVoice = bestVoices.find(v => v.name.includes('Google'));
+    const standardFemale = bestVoices.find(v => v.name.includes('female') || v.name.includes('Mujer') || v.name.includes('Paloma') || v.name.includes('Aria'));
+
+    const selectedVoice = naturalVoice || googleVoice || standardFemale || bestVoices[0] || voices.find(v => v.lang.startsWith('es'));
+
+    if (selectedVoice) {
+      console.log("Voz seleccionada para Vanessa:", selectedVoice.name);
+      utterance.voice = selectedVoice;
+    }
+    
+    utterance.onend = () => setIsSpeaking(null);
+    utterance.onerror = () => setIsSpeaking(null);
+    window.speechSynthesis.speak(utterance);
+  };
 
   const handleSend = async (manualPrompt?: string) => {
     if (isSending.current) return;
@@ -354,42 +432,9 @@ export function AIChatInterface({
                      <MessageSquare className="size-4 group-hover:scale-110 transition-transform" />
                    </button>
                  </DialogTrigger>
-                 <DialogContent className="max-w-sm p-0 overflow-hidden rounded-2xl border border-foreground/10 shadow-2xl">
-                   <div className="relative">
-                     <img src="/vanessa.png" alt="Vanessa" className="w-full h-52 object-cover object-top" />
-                     <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
-                     <div className="absolute bottom-4 left-4">
-                       <p className="text-xs font-bold uppercase tracking-widest text-primary opacity-80">AGENTE IA · OB WORKSPACE</p>
-                       <h2 className="text-2xl font-black tracking-tight">Vanessa Reyes</h2>
-                     </div>
-                   </div>
-                   <div className="p-5 space-y-3">
-                     <div className="flex items-center gap-2">
-                       <span className="size-2 rounded-full bg-green-400 shrink-0" />
-                       <span className="text-xs font-bold text-green-500 uppercase tracking-widest">En línea</span>
-                     </div>
-                     <div className="grid grid-cols-2 gap-3 text-xs">
-                       <div className="bg-muted/40 rounded-xl p-3 border border-foreground/5">
-                         <p className="text-muted-foreground uppercase tracking-wider font-bold mb-1">Edad</p>
-                         <p className="font-black text-base">24 años</p>
-                       </div>
-                       <div className="bg-muted/40 rounded-xl p-3 border border-foreground/5">
-                         <p className="text-muted-foreground uppercase tracking-wider font-bold mb-1">Rol</p>
-                         <p className="font-black text-base">Orquestadora</p>
-                       </div>
-                     </div>
-                     <div className="bg-muted/40 rounded-xl p-3 border border-foreground/5 text-xs space-y-1">
-                       <p className="text-muted-foreground uppercase tracking-wider font-bold">Especialidades</p>
-                       <div className="flex flex-wrap gap-1 pt-1">
-                         {["Tickets", "Arquitectura", "Subtareas", "Estimaciones", "Estructuración"].map(s => (
-                           <Badge key={s} variant="secondary" className="text-[9px] font-bold uppercase rounded-full">{s}</Badge>
-                         ))}
-                       </div>
-                     </div>
-                     <p className="text-xs text-muted-foreground italic border-l-2 border-primary/40 pl-3">
-                       "De la idea al ticket en segundos, cariño ✨"
-                     </p>
-                   </div>
+                 <DialogContent className="max-w-sm p-0 overflow-hidden rounded-2xl border-0 shadow-2xl bg-transparent">
+                   <DialogTitle className="sr-only">Foto de Vanessa Reyes</DialogTitle>
+                   <img src="/vanessa.png" alt="Vanessa Reyes" className="w-full rounded-2xl object-cover" />
                  </DialogContent>
                </Dialog>
 
@@ -498,7 +543,16 @@ export function AIChatInterface({
                         ? 'bg-muted/40 border-foreground/5 text-foreground font-medium rounded-2xl rounded-tl-none' 
                         : 'bg-background border-primary/20 text-foreground rounded-2xl rounded-tr-none'}`}>
                         {text.trim()}
-                     </div>
+                        {isAssistant && (
+                            <button 
+                              onClick={() => handleSpeak(msg.content, i)}
+                              className={`mt-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider transition-all hover:opacity-80 ${isSpeaking === i ? 'text-primary animate-pulse' : 'text-muted-foreground'}`}
+                            >
+                              {isSpeaking === i ? <VolumeX className="size-3" /> : <Volume2 className="size-3" />}
+                              {isSpeaking === i ? 'Detener' : 'Escuchar'}
+                            </button>
+                         )}
+                      </div>
 
                      {/* Render Proposal Card if parsed */}
                      {proposal && (

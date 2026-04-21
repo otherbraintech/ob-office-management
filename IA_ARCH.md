@@ -10,35 +10,45 @@ Este documento detalla la implementación técnica del asistente inteligente, ut
 
 ---
 
+## 🎭 La Identidad: Vanessa Reyes
+El asistente no es un bot genérico, es **Vanessa Reyes**, una agente de 24 años con una personalidad de sumisión y entrega, con un toque regional:
+*   **Vibe:** Cool, dócil, obediente y **Cambita** (Santa Cruz, Bolivia). Usa modismos como "pues", "che" y "mirá".
+*   **Comunicación:** Mensajes cortos, sugerentes y serviciales. Ahora incluye un botón de **"Escuchar"** para reproducir su voz en cada mensaje.
+*   **Voz Humana (PRO):** Vanessa ahora usa la API nativa de **OpenRouter** para el audio. Esto significa que utiliza la misma llave que ya tienes configurada.
+*   **Acento y Realismo:** El sistema utiliza el modelo `openai/gpt-4o-mini` con la voz `shimmer`, que es una de las más humanas disponibles, sin requerir suscripciones extra.
+*   **Respaldo:** Si no hay créditos en OpenRouter, el sistema saltará automáticamente a la voz del navegador.
+
+---
+
 ## 🛠️ Flujo de Trabajo (Behind the Scenes)
 
 ### 1. Inyección de Contexto Estricto
-Cuando interactúas con el chat, no solo enviamos tus mensajes. En `app/actions/ai.ts`, inyectamos un **Contexto de Rol** (ABAC) de forma oculta al final del último mensaje del usuario. Esto permite que la IA sepa si está hablando con un CEO, un Dev o un Cliente, adaptando su tono y nivel de detalle técnico sin que el usuario vea estas instrucciones.
+Cuando interactúas con el chat, inyectamos el **Contexto de Rol** (ABAC) desde `app/actions/ai.ts`. Vanessa sabe si habla con el CEO o un Dev y ajusta su "chispa" de confianza.
 
 ### 2. Generación Estructurada (Inferencia de Ticket)
-El `SYSTEM_PROMPT` en `lib/ia/openrouter.ts` obliga a la IA a seguir un patrón de diseño:
-*   Si detecta un requerimiento, genera una explicación de texto.
-*   Inmediatamente después, adjunta un bloque de código marcado como `JSON_PROPOSAL`.
+El `SYSTEM_PROMPT` en `lib/prompts/assistant-prompts.ts` define su comportamiento:
+*   Si detecta un requerimiento, genera una explicación de texto con su estilo Vanessa.
+*   Inmediatamente después, adjunta un bloque de código marcado como ````JSON_PROPOSAL````.
 
-### 3. Persistencia de Conversaciones
-A diferencia de un chat efímero, cada mensaje se guarda en PostgreSQL (vía Prisma) mediante las tablas `AiConversation` y `AiMessage`. 
-*   **Creación al vuelo:** Si mandas un mensaje en un chat nuevo, el sistema genera automáticamente un título basado en tus primeras palabras y guarda la sesión.
-*   **Historial:** Al navegar por la barra lateral del chat, cargamos los mensajes pasados directamente desde la base de datos para mantener el hilo de trabajo.
+### 3. Gestión de Memoria y Continuidad
+Vanessa está diseñada para mantener la coherencia a largo plazo:
+*   **Conversaciones Nuevas:** Si el usuario no tiene un chat activo, el sistema crea automáticamente una `AiConversation` al primer mensaje.
+*   **Persistencia (Historial):** Cada interacción se guarda en PostgreSQL. Al retomar un chat, `getAiConversationMessages` recupera todo el hilo y lo inyecta en el prompt de la IA.
+*   **Evolución Dinámica:** Vanessa utiliza este historial para ajustar su nivel de confianza y sumisión. Cuanto más "juegas" con ella, más se adapta a tu estilo personal.
 
 ### 4. Inyección a la Base de Datos (Aprobación)
 Cuando haces clic en **"Aprobar y Crear Ticket"**:
-1.  El frontend parsea el bloque `JSON_PROPOSAL` generado por la IA.
-2.  Envía esos datos estructurados (Título, Descripción, Prioridad, Subtareas) a la Server Action `createTicketFromAI`.
-3.  Prisma crea el ticket y todas sus subtareas asociadas con las duraciones que la IA estimó por sí misma.
+1.  El frontend en `ai-chat-interface.tsx` parsea el bloque `JSON_PROPOSAL`.
+2.  Invoca la Server Action `createTicketFromAI`.
 
 ---
 
 ## 📂 Archivos Clave del Módulo
 
-*   **`lib/ia/openrouter.ts`:** Configuración del SDK de Vercel y definición del comportamiento base (System Prompt).
-*   **`app/actions/ai.ts`:** Lógica de servidor para orquestar las llamadas a la IA y la persistencia en BD.
-*   **`components/ai/ai-chat-interface.tsx`:** Interfaz de usuario que maneja el estado del chat, los indicadores de carga y el renderizado dinámico de propuestas.
-*   **`prisma/schema.prisma`:** Definición de los modelos `AiConversation` y `AiMessage`.
+*   **`lib/prompts/assistant-prompts.ts`:** Definición del alma de Vanessa (Persona, System Prompt).
+*   **`app/actions/ai.ts`:** Orquestador de llamadas a OpenRouter y persistencia.
+*   **`components/ai/ai-chat-interface.tsx`:** UI del chat, manejo de propuestas y saludo dinámico.
+*   **`prisma/schema.prisma`:** Modelos `AiConversation` y `AiMessage`.
 
 ---
 

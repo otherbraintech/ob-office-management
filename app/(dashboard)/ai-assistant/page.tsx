@@ -6,6 +6,7 @@ import { getAiConversations } from "@/app/actions/ai";
 import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export default async function AIAssistantPage({ searchParams }: { searchParams: Promise<{ projectId?: string }> }) {
   const resolvedSearchParams = await searchParams;
@@ -44,10 +45,21 @@ export default async function AIAssistantPage({ searchParams }: { searchParams: 
       {/* Header reducido para ganar espacio */}
       <div className="py-2 px-4 shrink-0 bg-background border-b border-foreground/5 z-20">
         <div className="flex items-center gap-3">
-          <Avatar className="size-10 rounded-full border-2 border-primary/20 shadow-sm shrink-0">
-            <AvatarImage src="/vanessa.png" className="object-cover" />
-            <AvatarFallback>VN</AvatarFallback>
-          </Avatar>
+          <Dialog>
+            <DialogTrigger asChild>
+              <button className="relative cursor-pointer shrink-0 hover:scale-105 transition-transform" aria-label="Ver perfil de Vanessa">
+                <Avatar className="size-10 rounded-full border-2 border-primary/20 shadow-sm shrink-0">
+                  <AvatarImage src="/vanessa.png" className="object-cover" />
+                  <AvatarFallback>VN</AvatarFallback>
+                </Avatar>
+                <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-green-400 border-2 border-background" />
+              </button>
+            </DialogTrigger>
+            <DialogContent className="max-w-sm p-0 overflow-hidden rounded-2xl border-0 shadow-2xl bg-transparent">
+              <DialogTitle className="sr-only">Foto de Vanessa Reyes</DialogTitle>
+              <img src="/vanessa.png" alt="Vanessa Reyes" className="w-full rounded-2xl object-cover" />
+            </DialogContent>
+          </Dialog>
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <h1 className="text-xl md:text-2xl font-black tracking-tighter uppercase leading-none">Vanessa</h1>
