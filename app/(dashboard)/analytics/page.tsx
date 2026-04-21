@@ -162,7 +162,7 @@ export default async function AnalyticsPage() {
               ))}
               <div className="pt-4 border-t">
                 <CardTitle className="text-sm mb-3">Prioridad</CardTitle>
-                {Object.entries(statsByPriority).map(([priority, count]) => (
+                {Object.entries(statsByPriority).map(([priority, count]: any) => (
                   <div key={priority} className="flex items-center justify-between mb-2 text-sm">
                     <span className="text-muted-foreground">{priority}</span>
                     <span className="font-medium">{count}</span>
@@ -183,7 +183,7 @@ export default async function AnalyticsPage() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {projects.map((project: any) => {
-              const projectTickets = project.modules.flatMap(m => m.tickets);
+              const projectTickets = project.modules.flatMap((m: any) => m.tickets);
               const projCompleted = projectTickets.filter((t: any) => t.status === 'DONE').length;
               const projProgress = projectTickets.length > 0 ? (projCompleted / projectTickets.length) * 100 : 0;
 
