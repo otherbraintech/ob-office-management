@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useSidebar } from '@/components/ui/sidebar';
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
+import Image from 'next/image';
 
 export function AIChatInterface({ 
   availableModules, 
@@ -346,9 +348,70 @@ export function AIChatInterface({
       {/* Zona Principal de Chat */}
       <div className="flex-1 flex flex-col bg-background/50 min-h-0 overflow-hidden relative">
         <div className="flex border-b items-center justify-between p-3 shrink-0 bg-background/80 backdrop-blur-sm z-10">
-           <div className="flex items-center gap-2 text-sm font-medium flex-1">
-               <div className="flex items-center gap-2 flex-1">
-                 <MessageSquare className="size-4 text-primary shrink-0" /> 
+            <div className="flex items-center gap-3 flex-1">
+                <Dialog>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <DialogTrigger asChild>
+                          <Avatar className="size-8 rounded-full border border-primary/20 shadow-sm cursor-pointer hover:scale-105 transition-transform shrink-0">
+                             <AvatarImage src="/vanessa.png" className="object-cover" />
+                             <AvatarFallback>VN</AvatarFallback>
+                          </Avatar>
+                        </DialogTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="text-[10px]">Ver perfil de Vanessa</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <DialogContent className="max-w-md p-0 overflow-hidden border-none bg-zinc-950 shadow-2xl rounded-3xl">
+                    <DialogTitle className="sr-only">Curriculum de Vanessa</DialogTitle>
+                    <div className="relative aspect-[4/5] w-full">
+                      <Image src="/vanessa.png" fill className="object-cover" alt="Vanessa" priority />
+                      <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent"></div>
+                      
+                      {/* Info Overlay */}
+                      <div className="absolute bottom-0 left-0 right-0 p-8 space-y-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                             <h2 className="text-4xl font-black tracking-tighter uppercase italic text-white">Vanessa</h2>
+                             <Badge className="bg-primary text-primary-foreground font-black text-[10px] rounded-none">LVL 99</Badge>
+                          </div>
+                          <p className="text-sm font-bold text-primary uppercase tracking-[0.2em]">Senior Operative Architect</p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 border-t border-white/10 pt-4">
+                          <div className="space-y-1">
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Edad</p>
+                            <p className="text-sm font-bold text-white">24 Años</p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Especialidad</p>
+                            <p className="text-sm font-bold text-white">Estructuración / IA</p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Personalidad</p>
+                            <p className="text-sm font-bold text-white italic">Fresita-Chic / Directa</p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Status</p>
+                            <div className="flex items-center gap-1.5">
+                              <div className="size-2 bg-green-500 rounded-full animate-pulse"></div>
+                              <p className="text-sm font-bold text-white">High Performance</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <p className="text-[11px] text-white/60 leading-relaxed italic border-l-2 border-primary pl-3">
+                          "O sea, literal amo el orden y que las cosas se hagan YA. Si no es perfecto, no es mío. ¿Estructuramos?"
+                        </p>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                <div className="flex items-center gap-2 text-sm font-medium flex-1">
+                   <div className="flex items-center gap-2 flex-1">
+                     <MessageSquare className="size-4 text-primary shrink-0" /> 
                  {isEditingTitle ? (
                    <div className="flex items-center gap-1 flex-1 max-w-sm">
                      <Input 
@@ -413,19 +476,8 @@ export function AIChatInterface({
               </div>
             )}
 
-            {/* GREETING MESSAGE */}
-            {!currentConvId && messages.length === 0 && !loading && (
-               <div className="flex gap-4 animate-in fade-in duration-300">
-                  <div className="size-9 rounded-full flex items-center justify-center shrink-0 shadow-sm border bg-foreground text-background border-foreground/10">
-                     <BotIcon size={18} />
-                  </div>
-                  <div className="flex flex-col gap-2 max-w-[90%] md:max-w-[75%] items-start">
-                     <div className="p-4 rounded-2xl rounded-tl-none border whitespace-pre-wrap text-[13px] leading-relaxed w-full overflow-hidden shadow-sm bg-muted/40 border-foreground/5 text-foreground font-medium">
-                        {displayedGreeting}{!greeted && <span className="animate-pulse ml-1 text-primary">|</span>}
-                     </div>
-                  </div>
-               </div>
-            )}
+            {/* GREETING MESSAGE ELIMINADO */}
+
 
             {messages.map((msg, i) => {
                const { text, proposal } = parseContent(msg.content);
@@ -435,7 +487,10 @@ export function AIChatInterface({
                 <div key={i} className={`flex gap-4 ${isAssistant ? '' : 'flex-row-reverse'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
                   <div className={`size-9 rounded-full flex items-center justify-center shrink-0 shadow-sm border ${isAssistant ? 'bg-foreground text-background border-foreground/10' : 'bg-primary text-primary-foreground border-primary overflow-hidden'}`}>
                      {isAssistant ? (
-                       <BotIcon size={18} />
+                       <Avatar className="size-full rounded-full">
+                         <AvatarImage src="/vanessa.png" className="object-cover" />
+                         <AvatarFallback>VN</AvatarFallback>
+                       </Avatar>
                      ) : (
                        <Avatar className="size-full rounded-full">
                          <AvatarImage src={user.image} />
@@ -518,8 +573,11 @@ export function AIChatInterface({
             })}
             {loading && messages.length > 0 && (
                <div className="flex gap-3 animate-in fade-in slide-in-from-bottom-1 duration-300">
-                  <div className="size-9 rounded-full flex items-center justify-center shrink-0 border bg-foreground text-background border-foreground/10">
-                     <BotIcon size={18} />
+                  <div className="size-9 rounded-full flex items-center justify-center shrink-0 border bg-background text-foreground border-foreground/10 overflow-hidden">
+                     <Avatar className="size-full rounded-full">
+                        <AvatarImage src="/vanessa.png" className="object-cover" />
+                        <AvatarFallback>VN</AvatarFallback>
+                     </Avatar>
                   </div>
                   <div className="p-4 border bg-muted/40 border-foreground/5 flex items-center gap-1 text-sm text-foreground/50 shadow-sm min-w-16 rounded-2xl rounded-tl-none">
                      <span className="flex gap-1">

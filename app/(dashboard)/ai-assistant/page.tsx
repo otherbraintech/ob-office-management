@@ -43,10 +43,10 @@ export default async function AIAssistantPage({ searchParams }: { searchParams: 
       {/* Header reducido para ganar espacio */}
       <div className="py-2 px-4 shrink-0 bg-background border-b border-foreground/5 z-20">
         <div className="flex items-center gap-2">
-          <h1 className="text-xl md:text-2xl font-black tracking-tighter uppercase leading-none">Asistente IA</h1>
-          <Badge variant="outline" className="rounded-none text-[8px] font-black tracking-widest bg-primary/5 text-primary border-primary/20">ESTRUCTURADOR</Badge>
+          <h1 className="text-xl md:text-2xl font-black tracking-tighter uppercase leading-none">Vanessa</h1>
+          <Badge variant="outline" className="rounded-none text-[8px] font-black tracking-widest bg-primary/5 text-primary border-primary/20">AGENTE IA</Badge>
         </div>
-        <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60 mt-0.5">Generación automática de tickets y arquitectura</p>
+        <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60 mt-0.5">Gestión avanzada de tickets y orquestación</p>
       </div>
  
       <div className="flex-1 min-h-0 overflow-hidden flex flex-col bg-background relative">
