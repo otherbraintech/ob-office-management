@@ -1,4 +1,4 @@
-# 🏢 OB Office Management: Universe Core
+# 🏢 OB Workspace: Universe Core
 ### *El Sistema Avanzado de Inteligencia Operacional Impulsado por IA*
 
 ![Versión](https://img.shields.io/badge/versión-1.0.0-blue.svg?style=flat-square)
@@ -9,7 +9,7 @@
 ---
 
 ## 🚀 Resumen General
-**OB Office Management** es una plataforma de vanguardia para la automatización de oficinas y la orquestación de proyectos, diseñada para equipos de alto rendimiento. Utiliza integración avanzada de IA para transformar requerimientos informales en arquitectura técnica estructurada, automatizando la creación de tickets y optimizando los flujos operativos mediante telemetría en tiempo real.
+**OB Workspace** es una plataforma de vanguardia para la automatización de oficinas y la orquestación de proyectos, diseñada para equipos de alto rendimiento. Utiliza integración avanzada de IA para transformar requerimientos informales en arquitectura técnica estructurada, automatizando la creación de tickets y optimizando los flujos operativos mediante telemetría en tiempo real.
 
 Construido como el núcleo central del **Ecosistema OtherBrain**, combina una estética minimalista con una eficiencia brutalista, asegurando que cada segundo de tiempo operativo sea rastreado, analizado y optimizado.
 
