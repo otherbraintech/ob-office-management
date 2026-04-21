@@ -160,14 +160,25 @@ export async function aiGenerateSpeech(text: string): Promise<ActionResponse<str
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.warn("OpenRouter TTS Fail:", errorText);
+      console.warn("OpenRouter TTS Fail, trying Google Fallback:", errorText);
+      
+      // 🔥 FALLBACK DE EMERGENCIA: Google Translate HD (Gratis y mil veces mejor que Sabina/Helena)
+      const googleTtsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(cleanText.substring(0, 200))}&tl=es&client=tw-ob`;
+      const gRes = await fetch(googleTtsUrl);
+      
+      if (gRes.ok) {
+        const gArrayBuffer = await gRes.arrayBuffer();
+        const gBase64Audio = Buffer.from(gArrayBuffer).toString('base64');
+        return { data: gBase64Audio, provider: 'google' };
+      }
+      
       return { error: "Servicio de voz no disponible." };
     }
 
     const arrayBuffer = await response.arrayBuffer();
     const base64Audio = Buffer.from(arrayBuffer).toString('base64');
     
-    return { data: base64Audio };
+    return { data: base64Audio, provider: 'openrouter' };
   } catch (error) {
     console.error("[aiGenerateSpeech Error]:", error);
     return { error: "Error técnico en TTS." };
