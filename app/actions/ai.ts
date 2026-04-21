@@ -133,3 +133,15 @@ export async function addAiMessage(conversationId: string, role: string, content
     return { error: "Failed to save message" };
   }
 }
+
+export async function updateAiConversationTitle(id: string, title: string) {
+  try {
+    const conv = await prisma.aiConversation.update({
+      where: { id },
+      data: { title }
+    });
+    return { data: conv };
+  } catch (error) {
+    return { error: "No se pudo actualizar el título." };
+  }
+}

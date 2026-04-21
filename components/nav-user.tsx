@@ -21,7 +21,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { ChevronsUpDownIcon, SparklesIcon, BadgeCheckIcon, CreditCardIcon, BellIcon, LogOutIcon } from "lucide-react"
+import { ChevronsUpDownIcon, SparklesIcon, BadgeCheckIcon, CreditCardIcon, BellIcon, LogOutIcon, SunIcon, MoonIcon } from "lucide-react"
+import { useTheme } from "@/components/theme-provider"
 import Link from "next/link"
 
 export function NavUser({
@@ -34,6 +35,7 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const { theme, setTheme } = useTheme()
 
   return (
     <SidebarMenu>
@@ -89,6 +91,13 @@ export function NavUser({
                 <BellIcon />
                 Notificaciones
                 <span className="ml-auto text-[10px] font-bold bg-muted px-1 rounded">Soon</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")} 
+                className="cursor-pointer"
+              >
+                {theme === "dark" ? <SunIcon className="size-4" /> : <MoonIcon className="size-4" />}
+                {theme === "dark" ? "Modo Claro" : "Modo Oscuro"}
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

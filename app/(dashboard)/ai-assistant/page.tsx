@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { AIChatInterface } from "@/components/ai/ai-chat-interface";
 import { getAiConversations } from "@/app/actions/ai";
 import { Suspense } from "react";
+import { Badge } from "@/components/ui/badge";
 
 export default async function AIAssistantPage({ searchParams }: { searchParams: Promise<{ projectId?: string }> }) {
   const resolvedSearchParams = await searchParams;
@@ -33,20 +34,28 @@ export default async function AIAssistantPage({ searchParams }: { searchParams: 
   const convsResult = await getAiConversations(session.id);
   const initialConversations = convsResult.data || [];
 
+  // Fetch full user for image and other personalized details
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.id }
+  });
+
   return (
-    <div className="flex flex-col h-[calc(100vh-6rem)] p-2 overflow-hidden">
-      <div className="flex flex-col gap-1 mb-4 shrink-0 px-2">
-        <h1 className="text-4xl font-black tracking-tighter uppercase leading-none">Crear ticket con IA</h1>
-        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Tu asistente personal para estructurar requerimientos, estimar tiempos y organizar el trabajo de forma automática.</p>
+    <div className="flex flex-col flex-1 min-h-0 h-full overflow-hidden -m-4">
+      {/* Header reducido para ganar espacio */}
+      <div className="py-2 px-4 shrink-0 bg-background border-b border-foreground/5 mb-0">
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl md:text-2xl font-black tracking-tighter uppercase leading-none">Asistente IA</h1>
+          <Badge variant="outline" className="rounded-none text-[8px] font-black tracking-widest bg-primary/5 text-primary border-primary/20">ESTRUCTURADOR</Badge>
+        </div>
+        <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60 mt-0.5">Generación automática de tickets y arquitectura</p>
       </div>
 
-      <div className="flex-1 min-h-0 bg-background border-2 border-foreground/5 rounded-none shadow-none overflow-hidden flex flex-col">
+      <div className="flex-1 min-h-0 overflow-hidden flex flex-col bg-background">
           <Suspense fallback={<div className="flex-1 flex items-center justify-center">Cargando asistente...</div>}>
             <AIChatInterface 
                 availableModules={modules} 
                 availableProjects={projects}
-                currentUserId={session.id} 
-                currentUserRole={session.role}
+                user={dbUser} 
                 initialConversations={initialConversations}
                 contextProject={contextProject}
             />
