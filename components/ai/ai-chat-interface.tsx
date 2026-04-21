@@ -31,10 +31,12 @@ export function AIChatInterface({
   const searchParams = useSearchParams();
   const { isMobile } = useSidebar();
 
+  const urlChatId = searchParams.get('chatId');
+
   const [conversations, setConversations] = useState<any[]>(initialConversations);
-  const [currentConvId, setCurrentConvId] = useState<string | null>(null);
+  const [currentConvId, setCurrentConvId] = useState<string | null>(urlChatId);
   const [messages, setMessages] = useState<{role: 'user' | 'assistant' | 'system', content: string}[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!!urlChatId);
   const [draft, setDraft] = useState('');
   
   const [selectedTarget, setSelectedTarget] = useState(
@@ -74,7 +76,7 @@ export function AIChatInterface({
   }, [searchParams]);
 
   useEffect(() => {
-    if (currentConvId) {
+    if (currentConvId && currentConvId !== urlChatId) {
       const url = new URL(window.location.href);
       url.searchParams.set('chatId', currentConvId);
       window.history.replaceState(null, '', url.toString());
@@ -114,15 +116,24 @@ export function AIChatInterface({
     }
   };
 
-  // Auto-scroll logic
-  useEffect(() => {
+  const scrollToBottom = () => {
     if (scrollRef.current) {
-        const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
-        if (scrollContainer) {
-            scrollContainer.scrollTop = scrollContainer.scrollHeight;
-        }
+      const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollContainer) {
+        scrollContainer.scrollTo({
+          top: scrollContainer.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
     }
-  }, [messages, loading]);
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+    // Re-scroll shortly after to catch images or cards rendering
+    const timer = setTimeout(scrollToBottom, 100);
+    return () => clearTimeout(timer);
+  }, [messages, loading, greeted, displayedGreeting]);
 
   // Load messages when selecting a conversation
   useEffect(() => {
@@ -331,7 +342,7 @@ export function AIChatInterface({
   };
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-background flex-row min-h-0 relative">
+    <div className="flex h-full w-full overflow-hidden bg-background flex-row min-h-0 relative border-t border-foreground/5">
       {/* Zona Principal de Chat */}
       <div className="flex-1 flex flex-col bg-background/50 min-h-0 overflow-hidden relative">
         <div className="flex border-b items-center justify-between p-3 shrink-0 bg-background/80 backdrop-blur-sm z-10">
@@ -505,7 +516,7 @@ export function AIChatInterface({
                 </div>
               )
             })}
-            {loading && (
+            {loading && messages.length > 0 && (
                <div className="flex gap-3 animate-in fade-in slide-in-from-bottom-1 duration-300">
                   <div className="size-9 rounded-full flex items-center justify-center shrink-0 border bg-foreground text-background border-foreground/10">
                      <BotIcon size={18} />

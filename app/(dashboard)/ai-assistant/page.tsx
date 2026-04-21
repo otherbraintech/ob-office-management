@@ -1,5 +1,4 @@
 import { getSession } from "@/app/actions/auth";
-import { chatWithAI } from "@/lib/ia/openrouter";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { AIChatInterface } from "@/components/ai/ai-chat-interface";
@@ -40,17 +39,17 @@ export default async function AIAssistantPage({ searchParams }: { searchParams: 
   });
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 h-full overflow-hidden -m-4">
+    <div className="absolute inset-0 overflow-hidden flex flex-col bg-background">
       {/* Header reducido para ganar espacio */}
-      <div className="py-2 px-4 shrink-0 bg-background border-b border-foreground/5 mb-0">
+      <div className="py-2 px-4 shrink-0 bg-background border-b border-foreground/5 z-20">
         <div className="flex items-center gap-2">
           <h1 className="text-xl md:text-2xl font-black tracking-tighter uppercase leading-none">Asistente IA</h1>
           <Badge variant="outline" className="rounded-none text-[8px] font-black tracking-widest bg-primary/5 text-primary border-primary/20">ESTRUCTURADOR</Badge>
         </div>
         <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60 mt-0.5">Generación automática de tickets y arquitectura</p>
       </div>
-
-      <div className="flex-1 min-h-0 overflow-hidden flex flex-col bg-background">
+ 
+      <div className="flex-1 min-h-0 overflow-hidden flex flex-col bg-background relative">
           <Suspense fallback={<div className="flex-1 flex items-center justify-center">Cargando asistente...</div>}>
             <AIChatInterface 
                 availableModules={modules} 
