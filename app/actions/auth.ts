@@ -126,12 +126,12 @@ export async function signup(formData: FormData) {
       maxAge: 60 * 60 * 24 * 7, // 1 week
       path: '/',
     });
-    
-    redirect('/dashboard');
   } catch (error) {
     console.error("Error en registro:", error);
     return { error: "Ocurrió un error al crear la cuenta" };
   }
+  
+  redirect('/dashboard');
 }
 
 export async function updateProfile(userId: string, data: { name?: string, username?: string, image?: string, password?: string }) {

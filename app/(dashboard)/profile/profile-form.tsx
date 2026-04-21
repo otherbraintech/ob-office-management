@@ -34,24 +34,29 @@ export function ProfileForm({ user }: { user: any }) {
             return;
         }
 
+        // Validar tamaño máximo (3MB) para evitar errores del servidor (Max Payload)
+        const MAX_SIZE = 3 * 1024 * 1024;
+        if (file.size > MAX_SIZE) {
+            toast.error('La imagen es muy pesada. El tamaño máximo es 3MB.');
+            return;
+        }
+
         setIsUploading(true);
         try {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = async () => {
-                const base64 = (reader.result as string).split(',')[1];
-                const res = await uploadToObFile(base64, file.name, file.type);
-                
-                if (res.url) {
-                    setImage(res.url);
-                    toast.success('Imagen subida correctamente');
-                } else {
-                    toast.error('Error al subir la imagen');
-                }
-                setIsUploading(false);
-            };
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const res = await uploadToObFile(formData);
+            
+            if (res.url) {
+                setImage(res.url);
+                toast.success('Imagen subida correctamente');
+            } else {
+                toast.error('Error al subir la imagen');
+            }
         } catch (error) {
             toast.error('Error procesando el archivo');
+        } finally {
             setIsUploading(false);
         }
     };

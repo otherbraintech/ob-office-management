@@ -4,18 +4,24 @@ import { getSession } from "./auth";
 
 /**
  * Sube una imagen al backend administrado de OB-FILE
- * @param base64 Archivo en formato base64 sin el prefijo data:image/...
- * @param filename Nombre del archivo
- * @param mimeType Tipo MIME
+ * @param formData FormData que contiene el campo 'file' con el archivo
  */
-export async function uploadToObFile(base64: string, filename: string, mimeType: string) {
+export async function uploadToObFile(formData: FormData) {
     const session = await getSession();
-    if (!session) throw new Error("Unauthorized");
+    if (!session) return { error: "No autorizado" };
 
     const token = process.env['OB-FILE'];
-    if (!token) throw new Error("OB-FILE token not found in environment");
+    if (!token) return { error: "El token de OB-FILE no está configurado en el servidor" };
+
+    const file = formData.get('file') as File;
+    if (!file) return { error: "No file provided" };
 
     try {
+        const buffer = await file.arrayBuffer();
+        const base64 = Buffer.from(buffer).toString('base64');
+        const filename = file.name;
+        const mimeType = file.type;
+
         const response = await fetch('https://otherbrain-tech-ob-files-oficial.ddt6vc.easypanel.host/api/upload', {
             method: 'POST',
             headers: {

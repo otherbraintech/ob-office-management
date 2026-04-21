@@ -98,7 +98,7 @@ export function SignupForm({
                     id="password" 
                     name="password" 
                     type="password" 
-                    placeholder="••••••••"
+                    placeholder="Escribe tu contraseña"
                     className="rounded-none border-foreground/20 focus-visible:ring-foreground" 
                     required 
                   />
@@ -111,7 +111,7 @@ export function SignupForm({
                     id="confirm-password" 
                     name="confirm-password" 
                     type="password" 
-                    placeholder="••••••••"
+                    placeholder="Escribe tu contraseña de nuevo"
                     className="rounded-none border-foreground/20 focus-visible:ring-foreground" 
                     required 
                   />
@@ -119,7 +119,7 @@ export function SignupForm({
               </div>
 
               <Field>
-                <Button type="submit" className="w-full rounded-none font-bold" disabled={isPending}>
+                <Button type="submit" className="w-full rounded-none font-bold hover:cursor-pointer" disabled={isPending}>
                   {isPending ? "Creando cuenta..." : "Crear Cuenta"}
                 </Button>
               </Field>
