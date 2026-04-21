@@ -522,52 +522,54 @@ export function AIChatInterface({
           </div>
         </ScrollArea>
 
-        <div className="p-3 bg-background/80 backdrop-blur-sm border-t border-foreground/5 shrink-0">
-          <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex gap-2 max-w-3xl mx-auto relative">
-            <Input 
-               disabled={loading}
-               placeholder="Dime tus requerimientos para el ticket de hoy y te ayudare a estructurarlos" 
-               value={draft}
-               onChange={e => setDraft(e.target.value)}
-               className="pr-24 bg-background border-foreground/10 focus-visible:ring-1 focus-visible:ring-primary/20 h-12 rounded-xl transition-all"
-            />
-            <div className="absolute right-1 top-1 bottom-1 flex gap-1">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      type="button"
-                      onClick={toggleVoiceRecord}
-                      size="icon" 
-                      className={`size-10 rounded-full shadow-none cursor-pointer bg-transparent hover:bg-muted transition-all ${isListening ? 'text-red-500 bg-red-50 animate-pulse' : 'text-muted-foreground hover:text-foreground'}`}
-                    >
-                      {isListening ? <MicOff className="size-4" /> : <Mic className="size-4" />}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top">
-                    <p>{isListening ? 'Detener dictado' : 'Dictar mensaje'}</p>
-                  </TooltipContent>
-                </Tooltip>
-
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      disabled={loading || !draft.trim()} 
-                      size="icon" 
-                      type="submit" 
-                      className="size-10 cursor-pointer rounded-full shadow-none bg-transparent hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
-                    >
-                      <SendIcon className="size-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top">
-                    <p>Enviar mensaje</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-          </form>
-        </div>
+        {!(loading && messages.length === 0) && (
+          <div className="p-3 bg-background/80 backdrop-blur-sm border-t border-foreground/5 shrink-0">
+            <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex gap-2 max-w-3xl mx-auto relative">
+              <Input 
+                 disabled={loading}
+                 placeholder="Dime tus requerimientos para el ticket de hoy y te ayudare a estructurarlos" 
+                 value={draft}
+                 onChange={e => setDraft(e.target.value)}
+                 className="pr-24 bg-background border-foreground/10 focus-visible:ring-1 focus-visible:ring-primary/20 h-12 rounded-xl transition-all"
+              />
+              <div className="absolute right-1 top-1 bottom-1 flex gap-1">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        type="button"
+                        onClick={toggleVoiceRecord}
+                        size="icon" 
+                        className={`size-10 rounded-full shadow-none cursor-pointer bg-transparent hover:bg-muted transition-all ${isListening ? 'text-red-500 bg-red-50 animate-pulse' : 'text-muted-foreground hover:text-foreground'}`}
+                      >
+                        {isListening ? <MicOff className="size-4" /> : <Mic className="size-4" />}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p>{isListening ? 'Detener dictado' : 'Dictar mensaje'}</p>
+                    </TooltipContent>
+                  </Tooltip>
+  
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        disabled={loading || !draft.trim()} 
+                        size="icon" 
+                        type="submit" 
+                        className="size-10 cursor-pointer rounded-full shadow-none bg-transparent hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
+                      >
+                        <SendIcon className="size-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p>Enviar mensaje</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            </form>
+          </div>
+        )}
       </div>
 
       {/* Sidebar de Historial (Ahora a la derecha) */}
