@@ -1,105 +1,105 @@
 # 🏢 OB Office Management: Universe Core
-### *The Advanced AI-Driven Operational Intelligence System*
+### *El Sistema Avanzado de Inteligencia Operacional Impulsado por IA*
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg?style=flat-square)
+![Versión](https://img.shields.io/badge/versión-1.0.0-blue.svg?style=flat-square)
 ![Next.js](https://img.shields.io/badge/Next.js-16.2.3-black.svg?style=flat-square)
 ![Tailwind](https://img.shields.io/badge/Tailwind-4.0-38B2AC.svg?style=flat-square)
 ![Prisma](https://img.shields.io/badge/Prisma-7.7.0-2D3748.svg?style=flat-square)
 
 ---
 
-## 🚀 Overview
-**OB Office Management** is a state-of-the-art office automation and project orchestration platform designed for high-performance teams. It leverages advanced AI integration to transform informal requirements into structured technical architecture, automating ticket creation and optimizing operational workflows through real-time telemetry.
+## 🚀 Resumen General
+**OB Office Management** es una plataforma de vanguardia para la automatización de oficinas y la orquestación de proyectos, diseñada para equipos de alto rendimiento. Utiliza integración avanzada de IA para transformar requerimientos informales en arquitectura técnica estructurada, automatizando la creación de tickets y optimizando los flujos operativos mediante telemetría en tiempo real.
 
-Built as a central hub for the **OtherBrain Ecosystem**, it combines minimalist aesthetics with brutalist efficiency, ensuring that every second of operational time is tracked, analyzed, and optimized.
-
----
-
-## ✨ Key Features
-
-### 🤖 AI Assistant (Requirement Orchestrator)
-- **Informal-to-Technical Conversion**: An AI that parses natural language and voice dictation into structured architectural proposals and clickable tickets.
-- **Persistent Conversations**: Synchronized chat history with URL persistence and title auto-generation.
-- **Voice-Enabled Workflow**: Hands-free dictation support using Web Speech API integration.
-- **Architecture Proposals**: Generates JSON-based structured data for automatic ticket injection into projects.
-
-### 📋 Precision Project Management
-- **Hierarchical Structure**: Organize work into Projects and highly specialized Modules.
-- **Dynamic Kanban Board**: A real-time ticket management system with state-aware controls (Start, Pause, Resume, Complete).
-- **Subtask Granularity**: Every ticket supports nested subtasks for extreme precision.
-
-### ⏱️ Operational Telemetry (Speedrun Tracking)
-- **Active Timing System**: Persistent, database-level telemetry for ticket and subtask execution.
-- **Master Chronometer**: Visual color-coded feedback (Red/Yellow/Green) based on estimated vs. actual execution time.
-- **Pause/Resume Shift**: A global control system to atomically stop all active timers during breaks.
-
-### 📊 Intelligence & Settings
-- **Live Analytics**: Real-time insights into project progress, ticket completion rates, and team performance.
-- **User Personas**: Context-aware UI and AI behavior based on roles: CEO, Developer, or Client.
-- **Dynamic Themes**: Seamless switching between Dark and Light mode with persistent preferences.
+Construido como el núcleo central del **Ecosistema OtherBrain**, combina una estética minimalista con una eficiencia brutalista, asegurando que cada segundo de tiempo operativo sea rastreado, analizado y optimizado.
 
 ---
 
-## 🛠️ Technology Stack
+## ✨ Características Principales
 
-| Layer | Technology |
+### 🤖 Asistente de IA (Orquestador de Requerimientos)
+- **Conversión de Informal a Técnico**: Una IA que analiza lenguaje natural y dictado por voz para generar propuestas arquitectónicas estructuradas y tickets ejecutables.
+- **Conversaciones Persistentes**: Historial de chat sincronizado con persistencia en URL y autogeneración de títulos.
+- **Flujo Habilitado por Voz**: Soporte para dictado manos libres mediante la integración de la Web Speech API.
+- **Propuestas de Arquitectura**: Genera datos estructurados en JSON para la inyección automática de tickets en proyectos y módulos.
+
+### 📋 Gestión de Proyectos de Precisión
+- **Estructura Jerárquica**: Organiza el trabajo en Proyectos y Módulos altamente especializados.
+- **Tablero Kanban Dinámico**: Un sistema de gestión de tickets en tiempo real con controles de estado (Iniciar, Pausar, Reanudar, Completar).
+- **Granularidad de Subtareas**: Cada ticket admite subtareas anidadas para una precisión extrema.
+
+### ⏱️ Telemetría Operacional (Sistema Speedrun)
+- **Cronometraje Activo**: Telemetría persistente a nivel de base de datos para la ejecución de tickets y subtareas.
+- **Cronómetro Maestro**: Feedback visual codificado por colores (Rojo/Amarillo/Verde) basado en el tiempo estimado frente al real.
+- **Cambio de Turno Global**: Un sistema de control maestro para detener atómicamente todos los temporizadores activos durante los descansos.
+
+### 📊 Inteligencia y Configuración
+- **Analíticas en Vivo**: Información en tiempo real sobre el progreso del proyecto, tasas de finalización de tickets y rendimiento del equipo.
+- **Personas de Usuario**: Comportamiento de la UI y de la IA adaptado según el rol: CEO, Desarrollador o Cliente.
+- **Temas Dinámicos**: Cambio fluido entre modo Oscuro y Claro con preferencias persistentes.
+
+---
+
+## 🛠️ Stack Tecnológico
+
+| Capa | Tecnología |
 | :--- | :--- |
 | **Frontend** | Next.js 16 (App Router), TypeScript, Tailwind CSS 4 |
-| **Logic** | Server Components (RSC), Server Actions |
-| **UI Components** | shadcn/ui (Radix UI) |
-| **Database** | Prisma (ORM), PostgreSQL |
-| **AI Engine** | AI SDK + Vercel AI, OpenRouter Integration |
-| **Icons & Media** | Lucide React |
+| **Lógica** | Server Components (RSC), Server Actions |
+| **Componentes UI** | shadcn/ui (Radix UI) |
+| **Base de Datos** | Prisma (ORM), PostgreSQL |
+| **Motor de IA** | AI SDK + Vercel AI, Integración con OpenRouter |
+| **Iconos & Media** | Lucide React |
 
 ---
 
-## ⚙️ Setup & Installation
+## ⚙️ Configuración e Instalación
 
-### Prerequisites
-- Node.js (Latest LTS)
-- PostgreSQL Instance
-- OpenRouter API Key
+### Requisitos Previos
+- Node.js (Última versión LTS)
+- Instancia de PostgreSQL
+- API Key de OpenRouter
 
-### Installation
-1. Clone the repository:
+### Instalación
+1. Clonar el repositorio:
    ```bash
    git clone https://github.com/otherbraintech/ob-office-management.git
    ```
-2. Install dependencies:
+2. Instalar dependencias:
    ```bash
    npm install
    ```
-3. Set up environment variables (`.env`):
+3. Configurar variables de entorno (`.env`):
    ```env
    DATABASE_URL="postgresql://..."
    OPENROUTER_API_KEY="sk-or-..."
-   AUTH_SECRET="your-secret"
+   AUTH_SECRET="tu-secreto"
    ```
-4. Initialize the database:
+4. Inicializar la base de datos:
    ```bash
    npx prisma generate
    npx prisma db push
    ```
-5. Run the development server:
+5. Iniciar el servidor de desarrollo:
    ```bash
    npm run dev
    ```
 
 ---
 
-## 👤 User Roles & AI Logic
-- **CEO**: Focuses on business metrics, profitability, and high-level project health.
-- **Developer**: Direct, technical communication with code-level insights and subtask precision.
-- **Client**: Jargon-free, cordial assistance focusing on requirement capturing.
+## 👤 Roles de Usuario y Lógica de IA
+- **CEO**: Se enfoca en métricas de negocio, rentabilidad y salud de proyectos a alto nivel.
+- **Desarrollador**: Comunicación técnica directa con detalles de código y precisión en subtareas.
+- **Cliente**: Asistencia cordial y sin tecnicismos centrada en la captura de requerimientos.
 
 ---
 
-## 🛠️ Development Standards
-- **Clean Code**: Strict Typing, no `any`, modular components.
-- **Performance**: Heavy use of React Server Components and minimized client-side state.
-- **UX**: Mandatory `cursor-pointer` on interactive elements, smooth CSS transitions, and mobile-first layouts.
+## 🛠️ Estándares de Desarrollo
+- **Código Limpio**: Tipado estricto, sin uso de `any`, componentes modulares.
+- **Rendimiento**: Uso intensivo de React Server Components y estado mínimo en el cliente.
+- **UX**: `cursor-pointer` obligatorio en elementos interactivos, transiciones suaves de CSS y layouts mobile-first.
 
 ---
 
-**Developed with ❤️ by the OtherBrain Team.**
+**Desarrollado con ❤️ por el equipo de OtherBrain.**
 *"De la idea al ticket en segundos."*
