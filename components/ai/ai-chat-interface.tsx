@@ -217,11 +217,10 @@ export function AIChatInterface({
         const newConvRes = await createAiConversation(user.id, title);
         if (newConvRes.data) {
           convIdToUse = newConvRes.data.id;
-          skipFetchRef.current = true; // Mark to skip the useEffect fetch
+          skipFetchRef.current = true;
           setCurrentConvId(convIdToUse);
           setConversations(prev => [newConvRes.data, ...prev]);
-          // Guardar el mensaje inicial de bienvenida en la nueva conver en plano secundario
-          addAiMessage(newConvRes.data.id, 'assistant', fullGreeting);
+          // No guardamos mensaje de bienvenida — el historial empieza limpio
         }
       }
 
@@ -348,15 +347,11 @@ export function AIChatInterface({
       <div className="flex-1 flex flex-col bg-background/50 min-h-0 overflow-hidden relative">
         <div className="flex border-b items-center justify-between p-3 shrink-0 bg-background/80 backdrop-blur-sm z-10">
            <div className="flex items-center gap-3 text-sm font-medium flex-1">
-               {/* Vanessa Avatar + Profile Dialog */}
+               {/* Icono de Mensaje + Profile Dialog */}
                <Dialog>
                  <DialogTrigger asChild>
-                   <button className="relative cursor-pointer shrink-0 group" aria-label="Ver perfil de Vanessa">
-                     <Avatar className="size-9 rounded-full border-2 border-primary/20 shadow-sm transition-all group-hover:border-primary/60">
-                       <AvatarImage src="/vanessa.png" className="object-cover" />
-                       <AvatarFallback className="text-xs font-bold">VN</AvatarFallback>
-                     </Avatar>
-                     <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-green-400 border-2 border-background" />
+                   <button className="flex items-center justify-center size-8 rounded-lg hover:bg-primary/10 text-primary transition-all cursor-pointer shrink-0 group" aria-label="Ver perfil de Vanessa">
+                     <MessageSquare className="size-4 group-hover:scale-110 transition-transform" />
                    </button>
                  </DialogTrigger>
                  <DialogContent className="max-w-sm p-0 overflow-hidden rounded-2xl border border-foreground/10 shadow-2xl">
@@ -464,8 +459,20 @@ export function AIChatInterface({
               </div>
             )}
 
-            {/* GREETING MESSAGE ELIMINADO */}
-
+            {/* EMPTY STATE — Placeholder visual, no se guarda como mensaje */}
+            {!loading && messages.length === 0 && !currentConvId && (
+              <div className="flex-1 flex flex-col items-center justify-center text-center py-16 animate-in fade-in duration-500 px-6">
+                <Avatar className="size-16 rounded-full border-2 border-primary/20 shadow-lg mb-4">
+                  <AvatarImage src="/vanessa.png" className="object-cover" />
+                  <AvatarFallback>VN</AvatarFallback>
+                </Avatar>
+                <p className="text-xs font-bold text-primary uppercase tracking-widest mb-2">Vanessa · Agente IA</p>
+                <h2 className="text-2xl font-black tracking-tight mb-3">¿En qué piensas hoy?</h2>
+                <p className="text-sm text-muted-foreground max-w-xs">
+                  Cuéntame el requerimiento y lo estructuro como ticket en segundos.
+                </p>
+              </div>
+            )}
 
             {messages.map((msg, i) => {
                const { text, proposal } = parseContent(msg.content);

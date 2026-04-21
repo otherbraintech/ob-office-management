@@ -42,10 +42,10 @@ export async function aiChat(messages: { role: 'user' | 'assistant' | 'system'; 
       maxOutputTokens: 1500, // Aumentado para subtasks largas
     });
 
-    return text;
+    return { data: text };
   } catch (error) {
     console.error("[aiChat Error]:", error);
-    return "Error al procesar la petición de IA.";
+    return { error: "Error al procesar la petición de IA." };
   }
 }
 
