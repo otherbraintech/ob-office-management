@@ -85,12 +85,14 @@ export async function stopWorkSession(sessionId: string) {
   });
 
   // Aumentar el realTime acumulado en la Subtarea
-  await prisma.subtask.update({
-    where: { id: wSession.subtaskId },
-    data: {
-      realTime: { increment: diffInMinutes }
-    }
-  });
+  if (wSession.subtaskId) {
+    await prisma.subtask.update({
+      where: { id: wSession.subtaskId },
+      data: {
+        realTime: { increment: diffInMinutes }
+      }
+    });
+  }
 
   return true;
 }

@@ -23,7 +23,7 @@ export function ActiveTimer() {
       if (active && active.endTime == null) {
           setIsActive(true);
           setCurrentSessionId(active.id);
-          setSelectedSubtask(active.subtaskId);
+          setSelectedSubtask(active.subtaskId || '');
           const diffSeconds = Math.floor((new Date().getTime() - new Date(active.startTime).getTime()) / 1000);
           setElapsedTime(diffSeconds);
       }

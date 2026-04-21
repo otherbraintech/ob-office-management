@@ -90,10 +90,12 @@ export async function stopWorkSession(sessionId: string) {
   });
 
   // Update subtask realTime
-  await prisma.subtask.update({
-    where: { id: session.subtaskId },
-    data: { realTime: { increment: duration } },
-  });
+  if (session.subtaskId) {
+    await prisma.subtask.update({
+      where: { id: session.subtaskId },
+      data: { realTime: { increment: duration } },
+    });
+  }
 
   return updatedSession;
 }

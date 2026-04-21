@@ -30,8 +30,9 @@ export default async function AnalyticsPage() {
   // Status breakdown
   const statsByStatus = {
     BACKLOG: tickets.filter((t: any) => t.status === 'BACKLOG').length,
+    TODO: tickets.filter((t: any) => t.status === 'TODO').length,
     IN_PROGRESS: tickets.filter((t: any) => t.status === 'IN_PROGRESS').length,
-    REVIEW: tickets.filter((t: any) => t.status === 'REVIEW').length,
+    TESTING: tickets.filter((t: any) => t.status === 'TESTING').length,
     DONE: tickets.filter((t: any) => t.status === 'DONE').length,
   };
 
@@ -92,11 +93,11 @@ export default async function AnalyticsPage() {
         </Card>
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tickets en Revisión</CardTitle>
+            <CardTitle className="text-sm font-medium">Tickets en PR / QA</CardTitle>
             <Clock className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{statsByStatus.REVIEW}</div>
+            <div className="text-2xl font-bold">{statsByStatus.TESTING}</div>
             <p className="text-xs text-muted-foreground mt-1">Pendientes de aprobación</p>
           </CardContent>
         </Card>

@@ -10,7 +10,7 @@ type KanbanTicket = {
   priority: TicketPriority;
 };
 
-const STATUS_COLUMNS: TicketStatus[] = ['BACKLOG', 'IN_PROGRESS', 'REVIEW', 'DONE'];
+const STATUS_COLUMNS: TicketStatus[] = ['BACKLOG', 'TODO', 'IN_PROGRESS', 'TESTING', 'DONE'];
 
 export function KanbanBoard({ tickets }: { tickets: KanbanTicket[] }) {
   return (

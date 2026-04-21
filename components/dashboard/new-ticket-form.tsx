@@ -44,7 +44,8 @@ export function NewTicketForm({ moduleId, userId }: { moduleId: string; userId: 
         description: suggestedTicket.description,
         priority: suggestedTicket.priority,
         moduleId: moduleId,
-        leadId: userId
+        leadId: userId,
+        creatorId: userId
       });
       alert('¡Ticket guardado!');
       setSuggestedTicket(null);

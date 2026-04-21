@@ -71,7 +71,7 @@ export default async function DashboardOverview() {
     });
   }
 
-  const totalWeeklySeconds = weeklyWorkSessions.reduce((acc, session) => acc + (session.duration || 0), 0);
+  const totalWeeklySeconds = weeklyWorkSessions.reduce((acc: number, session: any) => acc + (session.duration || 0), 0);
   const totalWeeklyHours = (totalWeeklySeconds / 3600).toFixed(1);
   const totalMonthlyExpenses = monthlyExpenses._sum.amount || 0;
 
@@ -155,10 +155,10 @@ export default async function DashboardOverview() {
               <CardDescription>Seguimiento de progreso real basado en tareas completadas.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {myProjects.map((project, i) => {
-                const tickets = project.modules.flatMap(m => m.tickets);
-                const subtasks = tickets.flatMap(t => t.subtasks);
-                const completed = subtasks.filter(s => s.status === 'DONE').length;
+              {myProjects.map((project: any, i: number) => {
+                const tickets = project.modules.flatMap((m: any) => m.tickets);
+                const subtasks = tickets.flatMap((t: any) => t.subtasks);
+                const completed = subtasks.filter((s: any) => s.status === 'DONE').length;
                 const progress = subtasks.length > 0 ? (completed / subtasks.length) * 100 : 0;
 
                 return (
@@ -201,7 +201,7 @@ export default async function DashboardOverview() {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {recentTickets.map((ticket, i) => (
+                {recentTickets.map((ticket: any, i: number) => (
                   <div key={i} className="flex gap-4 text-sm">
                     <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs uppercase">
                       {ticket.lead?.name?.[0] || ticket.lead?.email?.[0] || 'U'}
@@ -230,7 +230,7 @@ export default async function DashboardOverview() {
             </CardHeader>
             <CardContent>
               <div className="flex -space-x-3 overflow-hidden">
-                {activeSessions.map((session, i) => (
+                {activeSessions.map((session: any, i: number) => (
                    <div key={i} title={session.user.name || session.user.email} className="inline-block h-10 w-10 rounded-full ring-2 ring-background bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs uppercase border-2 border-white">
                      {session.user.name?.[0] || session.user.email[0]}
                    </div>

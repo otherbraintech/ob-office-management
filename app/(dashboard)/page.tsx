@@ -51,13 +51,13 @@ export default async function DashboardPage() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project) => {
+          {projects.map((project: any) => {
             let totalSubtasks = 0;
             let completedSubtasks = 0;
 
-            project.modules.forEach(m => {
-              m.tickets.forEach(t => {
-                t.subtasks.forEach(s => {
+            project.modules.forEach((m: any) => {
+              m.tickets.forEach((t: any) => {
+                t.subtasks.forEach((s: any) => {
                   totalSubtasks++;
                   if (s.status === SubtaskStatus.DONE) completedSubtasks++;
                 });
@@ -101,7 +101,7 @@ export default async function DashboardPage() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <NewTicketForm />
+          <NewTicketForm moduleId={projects[0]?.modules[0]?.id || ""} userId={session?.id || ""} />
 
           <div className="space-y-4">
             <h2 className="text-2xl font-bold">Solicitudes Recientes</h2>
@@ -115,10 +115,10 @@ export default async function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {projects.flatMap(p => p.modules.flatMap(m => m.tickets))
-                    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+                  {projects.flatMap((p: any) => p.modules.flatMap((m: any) => m.tickets))
+                    .sort((a: any, b: any) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))
                     .slice(0, 5)
-                    .map(ticket => (
+                    .map((ticket: any) => (
                       <tr key={ticket.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                         <td className="px-4 py-3 font-medium">{ticket.title}</td>
                         <td className="px-4 py-3">
@@ -155,7 +155,7 @@ export default async function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <div className="md:col-span-2 lg:col-span-2 space-y-4">
            <ActiveTimer />
-           <NewTicketForm />
+           <NewTicketForm moduleId="" userId={session?.id || ""} />
         </div>
         <div className="md:col-span-1 lg:col-span-5 border rounded-xl overflow-hidden bg-card">
            <div className="p-4 border-b bg-muted/50 font-semibold flex items-center gap-2">
