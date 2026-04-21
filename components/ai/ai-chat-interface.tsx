@@ -11,10 +11,9 @@ import { aiChat, createTicketFromAI, addAiMessage, createAiConversation, getAiCo
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useSidebar } from '@/components/ui/sidebar';
-import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
-import Image from 'next/image';
 
 export function AIChatInterface({ 
   availableModules, 
@@ -348,70 +347,58 @@ export function AIChatInterface({
       {/* Zona Principal de Chat */}
       <div className="flex-1 flex flex-col bg-background/50 min-h-0 overflow-hidden relative">
         <div className="flex border-b items-center justify-between p-3 shrink-0 bg-background/80 backdrop-blur-sm z-10">
-            <div className="flex items-center gap-3 flex-1">
-                <Dialog>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <DialogTrigger asChild>
-                          <Avatar className="size-8 rounded-full border border-primary/20 shadow-sm cursor-pointer hover:scale-105 transition-transform shrink-0">
-                             <AvatarImage src="/vanessa.png" className="object-cover" />
-                             <AvatarFallback>VN</AvatarFallback>
-                          </Avatar>
-                        </DialogTrigger>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom" className="text-[10px]">Ver perfil de Vanessa</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <DialogContent className="max-w-md p-0 overflow-hidden border-none bg-zinc-950 shadow-2xl rounded-3xl">
-                    <DialogTitle className="sr-only">Curriculum de Vanessa</DialogTitle>
-                    <div className="relative aspect-[4/5] w-full">
-                      <Image src="/vanessa.png" fill className="object-cover" alt="Vanessa" priority />
-                      <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent"></div>
-                      
-                      {/* Info Overlay */}
-                      <div className="absolute bottom-0 left-0 right-0 p-8 space-y-4">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                             <h2 className="text-4xl font-black tracking-tighter uppercase italic text-white">Vanessa</h2>
-                             <Badge className="bg-primary text-primary-foreground font-black text-[10px] rounded-none">LVL 99</Badge>
-                          </div>
-                          <p className="text-sm font-bold text-primary uppercase tracking-[0.2em]">Senior Operative Architect</p>
-                        </div>
+           <div className="flex items-center gap-3 text-sm font-medium flex-1">
+               {/* Vanessa Avatar + Profile Dialog */}
+               <Dialog>
+                 <DialogTrigger asChild>
+                   <button className="relative cursor-pointer shrink-0 group" aria-label="Ver perfil de Vanessa">
+                     <Avatar className="size-9 rounded-full border-2 border-primary/20 shadow-sm transition-all group-hover:border-primary/60">
+                       <AvatarImage src="/vanessa.png" className="object-cover" />
+                       <AvatarFallback className="text-xs font-bold">VN</AvatarFallback>
+                     </Avatar>
+                     <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-green-400 border-2 border-background" />
+                   </button>
+                 </DialogTrigger>
+                 <DialogContent className="max-w-sm p-0 overflow-hidden rounded-2xl border border-foreground/10 shadow-2xl">
+                   <div className="relative">
+                     <img src="/vanessa.png" alt="Vanessa" className="w-full h-52 object-cover object-top" />
+                     <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+                     <div className="absolute bottom-4 left-4">
+                       <p className="text-xs font-bold uppercase tracking-widest text-primary opacity-80">AGENTE IA · OB WORKSPACE</p>
+                       <h2 className="text-2xl font-black tracking-tight">Vanessa Reyes</h2>
+                     </div>
+                   </div>
+                   <div className="p-5 space-y-3">
+                     <div className="flex items-center gap-2">
+                       <span className="size-2 rounded-full bg-green-400 shrink-0" />
+                       <span className="text-xs font-bold text-green-500 uppercase tracking-widest">En línea</span>
+                     </div>
+                     <div className="grid grid-cols-2 gap-3 text-xs">
+                       <div className="bg-muted/40 rounded-xl p-3 border border-foreground/5">
+                         <p className="text-muted-foreground uppercase tracking-wider font-bold mb-1">Edad</p>
+                         <p className="font-black text-base">24 años</p>
+                       </div>
+                       <div className="bg-muted/40 rounded-xl p-3 border border-foreground/5">
+                         <p className="text-muted-foreground uppercase tracking-wider font-bold mb-1">Rol</p>
+                         <p className="font-black text-base">Orquestadora</p>
+                       </div>
+                     </div>
+                     <div className="bg-muted/40 rounded-xl p-3 border border-foreground/5 text-xs space-y-1">
+                       <p className="text-muted-foreground uppercase tracking-wider font-bold">Especialidades</p>
+                       <div className="flex flex-wrap gap-1 pt-1">
+                         {["Tickets", "Arquitectura", "Subtareas", "Estimaciones", "Estructuración"].map(s => (
+                           <Badge key={s} variant="secondary" className="text-[9px] font-bold uppercase rounded-full">{s}</Badge>
+                         ))}
+                       </div>
+                     </div>
+                     <p className="text-xs text-muted-foreground italic border-l-2 border-primary/40 pl-3">
+                       "De la idea al ticket en segundos, cariño ✨"
+                     </p>
+                   </div>
+                 </DialogContent>
+               </Dialog>
 
-                        <div className="grid grid-cols-2 gap-4 border-t border-white/10 pt-4">
-                          <div className="space-y-1">
-                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Edad</p>
-                            <p className="text-sm font-bold text-white">24 Años</p>
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Especialidad</p>
-                            <p className="text-sm font-bold text-white">Estructuración / IA</p>
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Personalidad</p>
-                            <p className="text-sm font-bold text-white italic">Fresita-Chic / Directa</p>
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Status</p>
-                            <div className="flex items-center gap-1.5">
-                              <div className="size-2 bg-green-500 rounded-full animate-pulse"></div>
-                              <p className="text-sm font-bold text-white">High Performance</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        <p className="text-[11px] text-white/60 leading-relaxed italic border-l-2 border-primary pl-3">
-                          "O sea, literal amo el orden y que las cosas se hagan YA. Si no es perfecto, no es mío. ¿Estructuramos?"
-                        </p>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-
-                <div className="flex items-center gap-2 text-sm font-medium flex-1">
-                   <div className="flex items-center gap-2 flex-1">
-                     <MessageSquare className="size-4 text-primary shrink-0" /> 
+               <div className="flex items-center gap-2 flex-1">
                  {isEditingTitle ? (
                    <div className="flex items-center gap-1 flex-1 max-w-sm">
                      <Input 
@@ -433,7 +420,7 @@ export function AIChatInterface({
                      <span className="font-bold text-foreground truncate max-w-[150px] md:max-w-none">
                       {currentConvId 
                         ? (conversations.find(c => c.id === currentConvId)?.title || tempTitle) 
-                        : 'Nuevo Chat'}
+                        : 'Vanessa'}
                      </span>
                      {currentConvId && (
                        <Button 
@@ -454,6 +441,7 @@ export function AIChatInterface({
                  </Badge>
                )}
            </div>
+
 
            <Button 
              variant="ghost" 
